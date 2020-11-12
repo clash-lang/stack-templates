@@ -1,0 +1,541 @@
+{-# START_FILE {{name}}.cabal #-}
+cabal-version:       2.4
+name:                {{name}}
+version:             0.1
+license:             PublicDomain
+license-file:        LICENSE
+author:              {{author-name}}{{^author-name}}Author name here{{/author-name}}
+maintainer:          {{author-name}}{{^author-name}}Author name here{{/author-name}}
+copyright:           {{copyright}}{{^copyright}}{{year}}{{^year}}2020{{/year}} {{author-name}}{{^author-name}}Author name here{{/author-name}}{{/copyright}}
+
+common common-options
+  default-extensions:
+    BangPatterns
+    BinaryLiterals
+    ConstraintKinds
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    NoStarIsType
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    ViewPatterns
+
+    -- TemplateHaskell is used to support convenience functions such as
+    -- 'listToVecTH' and 'bLit'.
+    TemplateHaskell
+    QuasiQuotes
+
+    -- Prelude isn't imported by default as Clash offers Clash.Prelude
+    NoImplicitPrelude
+  ghc-options:
+    -Wall -Wcompat
+    -haddock
+
+    -- Plugins to support type-level constraint solving on naturals
+    -fplugin GHC.TypeLits.Extra.Solver
+    -fplugin GHC.TypeLits.Normalise
+    -fplugin GHC.TypeLits.KnownNat.Solver
+
+    -- Clash needs access to the source code in compiled modules
+    -fexpose-all-unfoldings
+
+    -- Worker wrappers introduce unstable names for functions that might have
+    -- blackboxes attached for them. You can disable this, but be sure to add
+    -- a no-specialize pragma to every function with a blackbox.
+    -fno-worker-wrapper
+  default-language: Haskell2010
+  build-depends:
+    base,
+    Cabal,
+
+    -- clash-prelude will set suitable version bounds for the plugins
+    clash-prelude >= 1.2.5 && < 1.4,
+    ghc-typelits-natnormalise,
+    ghc-typelits-extra,
+    ghc-typelits-knownnat
+
+library
+  import: common-options
+  hs-source-dirs: src
+  exposed-modules:
+    Example.Project
+  default-language: Haskell2010
+
+-- Builds the executable 'clash', with {{name}} project in scope
+executable clash
+  main-is: bin/Clash.hs
+  Build-Depends: base, clash-ghc, {{name}}
+  if !os(Windows)
+    ghc-options: -dynamic
+
+-- Builds the executable 'clashi', with {{name}} project in scope
+executable clashi
+  main-is: bin/Clashi.hs
+  if !os(Windows)
+    ghc-options: -dynamic
+  build-depends: base, clash-ghc, {{name}}
+
+test-suite test-library
+  import: common-options
+  hs-source-dirs: tests
+  type: exitcode-stdio-1.0
+  ghc-options: -threaded
+  main-is: tests.hs
+  other-modules:
+    Tests.Example.Project
+  build-depends:
+    {{name}},
+    QuickCheck,
+    tasty >= 1.2 && < 1.3,
+    tasty-quickcheck
+
+{-# START_FILE cabal.project #-}
+packages:
+  {{name}}.cabal
+
+package clash-prelude
+  -- 'large-tuples' generates tuple instances for various classes up to the
+  -- GHC imposed maximum of 62 elements. This severely slows down compiling
+  -- Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
+  -- it by default. This will be the default for Clash >=1.4.
+  flags: -large-tuples
+
+{-# START_FILE stack.yaml #-}
+resolver: lts-15.10
+
+extra-deps:
+- concurrent-supply-0.1.8
+- ghc-typelits-extra-0.4
+- clash-prelude-1.2.5
+- clash-lib-1.2.5
+- clash-ghc-1.2.5
+
+flags:
+  clash-prelude:
+    # 'large-tuples' generates tuple instances for various classes up to the
+    # GHC imposed maximum of 62 elements. This severely slows down compiling
+    # Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
+    # it by default. This will be the default for Clash >=1.4.
+    large-tuples: false
+
+{-# START_FILE hie.yaml #-}
+cradle:
+  multi:
+    - path: "./src"
+      config: {cradle: {cabal: {component: "lib:{{name}}"}}}
+    - path: "./tests"
+      config: {cradle: {cabal: {component: "test-suite:test-library"}}}
+    - path: "./bin/Clash.hs"
+      config: {cradle: {cabal: {component: "clash"}}}
+    - path: "./bin/Clashi.hs"
+      config: {cradle: {cabal: {component: "clashi"}}}
+    - path: "./Setup.hs"
+      config: {cradle: {none: }}
+
+{-# START_FILE setup.hs #-}
+import Prelude
+import Distribution.Simple
+
+main :: IO ()
+main = defaultMain
+
+{-# START_FILE bin/Clash.hs #-}
+import Prelude
+import System.Environment (getArgs)
+import Clash.Main (defaultMain)
+
+main :: IO ()
+main = getArgs >>= defaultMain
+
+{-# START_FILE bin/Clashi.hs #-}
+import Prelude
+import System.Environment (getArgs)
+import Clash.Main (defaultMain)
+
+main :: IO ()
+main = getArgs >>= defaultMain . ("--interactive":)
+
+{-# START_FILE src/Example/Project.hs #-}
+module Example.Project (topEntity, plus) where
+
+import Clash.Prelude
+
+plus :: Signed 8 -> Signed 8 -> Signed 8
+plus a b = a + b
+
+-- | 'topEntity' is Clash's equivalent of 'main' in other programming
+-- languages. Clash will look for it when compiling 'Example.Project'
+-- and translate it to HDL. While polymorphism can be used freely in
+-- Clash projects, a 'topEntity' must be monomorphic and must use non-
+-- recursive types. Or, to put it hand-wavily, a 'topEntity' must be
+-- translatable to a static number of wires.
+topEntity :: Signed 8 -> Signed 8 -> Signed 8
+topEntity = plus
+
+{-# START_FILE tests/tests.hs #-}
+import Prelude
+import qualified Tests.Example.Project
+
+main :: IO ()
+main = Tests.Example.Project.main
+
+{-# START_FILE tests/Tests/Example/Project.hs #-}
+module Tests.Example.Project where
+
+import Prelude
+import Test.Tasty
+import qualified Test.Tasty.QuickCheck as T
+
+import Example.Project (plus)
+
+main :: IO ()
+main = defaultMain tests
+
+aEqualsA :: Int -> Bool
+aEqualsA a = a == a
+
+
+tests :: TestTree
+tests = testGroup "Example"
+  [ testGroup "Project"
+    [ T.testProperty "plus a b == plus b a" (\a b -> plus a b == plus b a)
+    ]
+  ]
+
+{-# START_FILE .gitignore #-}
+dist/
+dist-newstyle/
+.stack-work/
+cabal-dev
+/cabal.project.local
+.ghc.environment.*
+*.o
+*.o-boot
+*.hi
+*.hi-boot
+*.po
+*.po-boot
+*.p_o
+*.p_o-boot
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_o-boot
+*.dyn_hi
+*.dyn_hi-boot
+.virtualenv
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+cabal.config
+*.prof
+*.aux
+*.hp
+*.bin
+*.log
+*.tar.gz
+
+*~
+*.DS_Store
+
+# IntelliJ
+/.idea
+*.iml
+
+# HDL directories often created during development cycle
+/vhdl
+/verilog
+/systemverilog
+
+{-# START_FILE README.md #-}
+# {{name}}
+[![CC0](https://licensebuttons.net/p/zero/1.0/88x31.png)](http://creativecommons.org/publicdomain/zero/1.0/)
+To the extent possible under law, QBayLogic B.V. has waived all copyright and related or neighboring rights to this "Clash Example Project".
+
+# Table of Contents
+- [Table of Contents](#table-of-contents)
+- [Downloading this example project](#downloading-this-example-project)
+- [Using this project](#using-this-project)
+  - [Stack (Windows, Linux, MacOS) [recommended]](#stack-windows-linux-macos-recommended)
+  - [Cabal (Linux, MacOS)](#cabal-linux-macos)
+  - [Snap (Linux)](#snap-linux)
+  - [Nix (Linux, MacOS)](#nix-linux-macos)
+  - [There's so many! Which should I pick?](#theres-so-many-which-should-i-pick)
+- [Change the LICENSE](#change-the-license)
+- [IDE support](#ide-support)
+
+# Based on Clash Example project
+This project is based on the Clash example project which is published with every Clash release.
+You can find a list of Clash releases at [github.com/clash-lang/clash-compiler/releases](https://github.com/clash-lang/clash-compiler/releases).
+Look for "starter project" under "Assets".
+
+# Using this project
+There's a number of ways to build this project on your machine. The recommended way of doing so is using _Stack_, whose instructions will follow directly after this section. Depending on your or your organization's needs, you might want to select another tool though. If you need help deciding, scroll down to [There's so many! Which should I pick?](#theres-so-many-which-should-i-pick).
+
+
+## Stack (Windows, Linux, MacOS) [recommended]
+Install Stack using your package manager or refer to the [How to install](https://docs.haskellstack.org/en/stable/README/#how-to-install) section of the [Stack manual](https://docs.haskellstack.org/en/stable/README/).
+
+Build the project with:
+
+```bash
+stack build
+```
+
+To run the tests defined in `tests/`, use:
+
+```bash
+stack test
+```
+
+To compile the project to VHDL, run:
+
+```bash
+stack run clash -- Example.Project --vhdl
+```
+
+## Cabal (Linux, MacOS)
+**The following instructions only work for Cabal >=3.0, GHC >=8.4, and Clash >=1.2.5.**
+
+First, update your cabal package database:
+
+```bash
+cabal update
+```
+
+You only have to run the update command once. After that, you can keep rebuilding your project by running the build command:
+
+```bash
+cabal build
+```
+
+To run the tests defined in `tests/`, use:
+
+```bash
+cabal run test-library
+```
+
+To compile the project to VHDL, run:
+
+```bash
+cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
+```
+
+
+## Snap (Linux)
+Linux users can use _snap_ to install Clash on their machines. See [snapcraft.io/clash](https://snapcraft.io/clash) how to do so. After installing Clash through snap, you can compile this project using:
+
+```bash
+clash.cabal update
+clash.cabal build
+```
+
+You only have to run the update command once. After that, you can keep rebuilding your project by running the build command.
+
+To run the tests defined in `tests/`, use:
+
+```bash
+clash.cabal run test-library
+```
+
+To compile the project to VHDL, run:
+
+```bash
+clash.cabal build --write-ghc-environment-files=always
+clash Example.Project --vhdl
+```
+
+Clash will look for a function called `topEntity` in the module you specify and compile that to HDL.
+
+<!-- omit in toc -->
+### Notes on using snap for your project
+
+1. By default, snaps will update to the latest stable release of Clash. This is a problem, because new (major) releases might break your design. To mitigate this, the next major Clash release (1.4) will introduce a [Snap channel](https://snapcraft.io/docs/channels) that will allow you to keep using 1.2.
+2. The version of `clash-{prelude,lib,ghc}` your project depends on must exactly match the one supplied in the snap. For this reason, we recommend specifying a range of Clash versions your project can work with. This way, cabal will automatically prefer the version installed int he snap.
+
+## Nix (Linux, MacOS)
+To be done.
+
+## There's so many! Which should I pick?
+In general we recommend **Stack**. It offers a great balance between ease of use, flexibility, and reliability. On top of that, it's easy to install and use on Windows. Of course, it is not going to suit everyone. What follows is a comparison table between the different toolchains.
+
+|                     | Snap | Cabal     | Stack    | Nix      |
+|---------------------|------|-----------|----------|----------|
+| Windows             |      | ¹         | ✓        |          |
+| Linux               | ✓    | ✓         | ✓        | ✓        |
+| macOS               |      | ✓         | ✓        | ✓        |
+| Binary cache²       | ✓    |           |          | ✓        |
+| Ease of use         | Easy | Moderate³ | Easy     | Hard⁴    |
+| Flexibility⁵        | Low  | Moderate  | Moderate | High     |
+| Snapshots⁵          |      | ⁶         | ✓        | ✓        |
+| `ghcide` compatible |      | ✓         | ✓        | Probably |
+
+Notes in table:
+
+1. Although Cabal does run on Windows, as of the time of writing -May 2020- it doesn't offer an easy way to install itself.
+2. Binary caches store project dependencies in their binary form on some centralized system. This helps to greatly reduce build times. See [the NixOS page on binary caches](https://nixos.wiki/wiki/Binary_Cache) for more information.
+3. Ease of use is set to _moderate_ for now as it:
+   * ..does not manage GHC installations. Users are responsible for installing the right `ghc` and passing it to cabal.
+   * ..offers multiple ways of compiling a project ("old style" and "new style") which is reflected in the, scattered, cabal user documentation.
+   * ..is hard to install for Windows users
+4. Nix is notoriously hard to setup. However, many users claim that once it's setup it's a breeze to use. YMMV.
+5. TODO
+6. Cabal offers snapshots through "freeze files". Freeze files pin all (transitive) dependencies of a project to a specific version. In contrast, Stack and Nix offer snapshots of versions of Haskell packages known to work together. In other words, when using Cabal the burden of figuring out which dependency works with which is on the user.
+
+# Change the LICENSE
+This Clash Example Project is dedicated to the public domain by its authors.
+It is likely that you might _not_ want to do the same when using this Clash Example Project as a template for your projects.
+So before publishing your work, make sure to change the copyright and license statement in the LICENSE file.
+
+# IDE support
+We currently recommend Visual Studio Code in combination with `ghcide`. To use it, execute the following steps:
+
+1. Install Visual Studio Code. If your Linux distribution supports `snap`, it's as simple as executing `sudo snap install code`. If you're running another platform, head over to [code.visualstudio.com](https://code.visualstudio.com/) for more information.
+2. Launch Visual Studio Code, click on "Extensions" on the left, search for and install the extension `ghcide`.
+3. Install `ghcide` using the instructions [over here](https://github.com/digital-asset/ghcide#using-it).
+4. Open this folder in Visual Studio Code.
+5. [Wait a few minutes](https://imgs.xkcd.com/comics/compiling.png)
+6. Enjoy Clash!
+
+
+{-# START_FILE LICENSE #-}
+Creative Commons Legal Code
+
+CC0 1.0 Universal
+
+    CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
+    LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN
+    ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
+    INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES
+    REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS
+    PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
+    THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
+    HEREUNDER.
+
+Statement of Purpose
+
+The laws of most jurisdictions throughout the world automatically confer
+exclusive Copyright and Related Rights (defined below) upon the creator
+and subsequent owner(s) (each and all, an "owner") of an original work of
+authorship and/or a database (each, a "Work").
+
+Certain owners wish to permanently relinquish those rights to a Work for
+the purpose of contributing to a commons of creative, cultural and
+scientific works ("Commons") that the public can reliably and without fear
+of later claims of infringement build upon, modify, incorporate in other
+works, reuse and redistribute as freely as possible in any form whatsoever
+and for any purposes, including without limitation commercial purposes.
+These owners may contribute to the Commons to promote the ideal of a free
+culture and the further production of creative, cultural and scientific
+works, or to gain reputation or greater distribution for their Work in
+part through the use and efforts of others.
+
+For these and/or other purposes and motivations, and without any
+expectation of additional consideration or compensation, the person
+associating CC0 with a Work (the "Affirmer"), to the extent that he or she
+is an owner of Copyright and Related Rights in the Work, voluntarily
+elects to apply CC0 to the Work and publicly distribute the Work under its
+terms, with knowledge of his or her Copyright and Related Rights in the
+Work and the meaning and intended legal effect of CC0 on those rights.
+
+1. Copyright and Related Rights. A Work made available under CC0 may be
+protected by copyright and related or neighboring rights ("Copyright and
+Related Rights"). Copyright and Related Rights include, but are not
+limited to, the following:
+
+  i. the right to reproduce, adapt, distribute, perform, display,
+     communicate, and translate a Work;
+ ii. moral rights retained by the original author(s) and/or performer(s);
+iii. publicity and privacy rights pertaining to a person's image or
+     likeness depicted in a Work;
+ iv. rights protecting against unfair competition in regards to a Work,
+     subject to the limitations in paragraph 4(a), below;
+  v. rights protecting the extraction, dissemination, use and reuse of data
+     in a Work;
+ vi. database rights (such as those arising under Directive 96/9/EC of the
+     European Parliament and of the Council of 11 March 1996 on the legal
+     protection of databases, and under any national implementation
+     thereof, including any amended or successor version of such
+     directive); and
+vii. other similar, equivalent or corresponding rights throughout the
+     world based on applicable law or treaty, and any national
+     implementations thereof.
+
+2. Waiver. To the greatest extent permitted by, but not in contravention
+of, applicable law, Affirmer hereby overtly, fully, permanently,
+irrevocably and unconditionally waives, abandons, and surrenders all of
+Affirmer's Copyright and Related Rights and associated claims and causes
+of action, whether now known or unknown (including existing as well as
+future claims and causes of action), in the Work (i) in all territories
+worldwide, (ii) for the maximum duration provided by applicable law or
+treaty (including future time extensions), (iii) in any current or future
+medium and for any number of copies, and (iv) for any purpose whatsoever,
+including without limitation commercial, advertising or promotional
+purposes (the "Waiver"). Affirmer makes the Waiver for the benefit of each
+member of the public at large and to the detriment of Affirmer's heirs and
+successors, fully intending that such Waiver shall not be subject to
+revocation, rescission, cancellation, termination, or any other legal or
+equitable action to disrupt the quiet enjoyment of the Work by the public
+as contemplated by Affirmer's express Statement of Purpose.
+
+3. Public License Fallback. Should any part of the Waiver for any reason
+be judged legally invalid or ineffective under applicable law, then the
+Waiver shall be preserved to the maximum extent permitted taking into
+account Affirmer's express Statement of Purpose. In addition, to the
+extent the Waiver is so judged Affirmer hereby grants to each affected
+person a royalty-free, non transferable, non sublicensable, non exclusive,
+irrevocable and unconditional license to exercise Affirmer's Copyright and
+Related Rights in the Work (i) in all territories worldwide, (ii) for the
+maximum duration provided by applicable law or treaty (including future
+time extensions), (iii) in any current or future medium and for any number
+of copies, and (iv) for any purpose whatsoever, including without
+limitation commercial, advertising or promotional purposes (the
+"License"). The License shall be deemed effective as of the date CC0 was
+applied by Affirmer to the Work. Should any part of the License for any
+reason be judged legally invalid or ineffective under applicable law, such
+partial invalidity or ineffectiveness shall not invalidate the remainder
+of the License, and in such case Affirmer hereby affirms that he or she
+will not (i) exercise any of his or her remaining Copyright and Related
+Rights in the Work or (ii) assert any associated claims and causes of
+action with respect to the Work, in either case contrary to Affirmer's
+express Statement of Purpose.
+
+4. Limitations and Disclaimers.
+
+ a. No trademark or patent rights held by Affirmer are waived, abandoned,
+    surrendered, licensed or otherwise affected by this document.
+ b. Affirmer offers the Work as-is and makes no representations or
+    warranties of any kind concerning the Work, express, implied,
+    statutory or otherwise, including without limitation warranties of
+    title, merchantability, fitness for a particular purpose, non
+    infringement, or the absence of latent or other defects, accuracy, or
+    the present or absence of errors, whether or not discoverable, all to
+    the greatest extent permissible under applicable law.
+ c. Affirmer disclaims responsibility for clearing rights of other persons
+    that may apply to the Work or any use thereof, including without
+    limitation any person's Copyright and Related Rights in the Work.
+    Further, Affirmer disclaims responsibility for obtaining any necessary
+    consents, permissions or other rights required for any use of the
+    Work.
+ d. Affirmer understands and acknowledges that Creative Commons is not a
+    party to this document and has no duty or obligation with respect to
+    this CC0 or use of the Work.
+

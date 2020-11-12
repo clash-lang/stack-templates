@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: pandoc/latex
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install stack
+        run: |
+          apt update
+          apt install wget -y
+          wget -q https://get.haskellstack.org/ -O stack_install.sh
+          sh stack_install.sh
+      - name: Instantiate template
+        run: |
+          stack new clash-example-project \
+            -p author-name:"Clash-team" \
+            -p author-email:"clash-language@googlegroups.com" \
+            -p copyright:"None" \
+            -p github-username:"clash-lang"
+          cd clash-example-project
+          stack build
+      - name: Test template
+        run: |
+          cd clash-example-project
+          stack test
+          stack run clash -- Example.Project --vhdl
+          
+
