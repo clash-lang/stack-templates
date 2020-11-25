@@ -279,9 +279,9 @@ main = Tests.Example.Project.main
 cabal-version:       2.4
 name:                {{name}}
 version:             0.1
-license:             {{license}}
-author:              {{author-name}}{{^author-name}}Author name here{{/author-name}}
-maintainer:          {{author-name}}{{^author-name}}Author name here{{/author-name}}
+license:             BSD-2-Clause
+author:              John Smith <john@example.com>
+maintainer:          John Smith <john@example.com>
 
 common common-options
   default-extensions:
