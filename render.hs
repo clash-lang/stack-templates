@@ -71,5 +71,5 @@ main = do
 
   void $ forM projects $ \p -> do
     hsfiles <- mkStackTemplate (projectsDir </> p)
-    putStrLn $ p <> ".hsfiles"
-    BS.writeFile (here </> p <> ".hsfiles") hsfiles
+    putStrLn $ "clash-lang-" <> p <> ".hsfiles"
+    BS.writeFile (here </> "clash-lang-" <> p <> ".hsfiles") hsfiles
