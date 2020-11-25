@@ -18,6 +18,9 @@ for hsfile in *.hsfiles; do
 
     stack new "${project}" "${hsfile}" -p "author-name:Example Name" -p "license:BSD-2-Clause"
     mv "${project}" clash-starters
+    cd clash-starters
+        zip -r "${project}.zip" "${project}"
+    cd ..
 done
 
 # Commit and push files
