@@ -29,4 +29,4 @@ RUN  apt-get update \
 
 # Compression utils
 RUN  apt-get update \
-  && apt-get -y install tar xz-utils
+  && apt-get -y install tar xz-utils zip
