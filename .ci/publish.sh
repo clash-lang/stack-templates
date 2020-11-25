@@ -14,7 +14,11 @@ cd ..
 
 # Render all projects in rendered/
 for hsfile in *.hsfiles; do
+    # Strip hsfile extension
     project="${hsfile%.*}"
+
+    # Strip clash-lang- prefix
+    project=${project#clash-lang-}
 
     stack new "${project}" "${hsfile}" -p "author-name:Example Name" -p "license:BSD-2-Clause"
     mv "${project}" clash-starters
