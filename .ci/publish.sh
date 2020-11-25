@@ -30,6 +30,6 @@ git config --global user.email "devopsXXX@qbaylogic.com"
 git add -A
 git commit -m "Automated push from clash-lang/stack-templates"
 
-if [[ "$1" == "main" ]]; then
+if [[ "$1" == "master" ]]; then
     git push -f
 fi
