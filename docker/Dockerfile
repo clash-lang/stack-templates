@@ -26,3 +26,7 @@ RUN  apt-get update \
   && wget https://get.haskellstack.org/stable/$LATEST_STACK \
   && tar xzf $LATEST_STACK && rm $LATEST_STACK \
   && mv stack*/stack /usr/bin
+
+# Compression utils
+RUN  apt-get update \
+  && apt-get -y install tar xz-utils
