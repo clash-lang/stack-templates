@@ -6,7 +6,7 @@ IFS=$'\n\t'
 cd "$(git rev-parse --show-toplevel)"
 
 for project in *.hsfiles; do
-    stack new inst "${project}" -p "author-name:My Name" -p "license:BSD-2-Clause"
+    stack new inst "${project}"
 
     cd inst
 

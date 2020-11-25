@@ -16,7 +16,7 @@ cd ..
 for hsfile in *.hsfiles; do
     project="${hsfile%.*}"
 
-    stack new "${project}" "${hsfile}" -p "author-name:Example Name" -p "license:BSD-2-Clause"
+    stack new "${project}" "${hsfile}"
     mv "${project}" clash-starters
     cd clash-starters
         zip -r "${project}.zip" "${project}"
