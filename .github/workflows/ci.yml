@@ -1,0 +1,46 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        container: ['docker.pkg.github.com/clash-lang/stack-templates/focal-ghc-cabal-stack:2020-11-24']
+
+    steps:
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "::set-output name=date::$(date --iso-8601=seconds)"
+        shell: bash
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-dependencies
+        with:
+          path: |
+            ~/.stack
+            ~/.cabal
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ steps.get-date.outputs.date }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - uses: actions/checkout@v2
+
+      - name: Instantiate template
+        env:
+          CLASH_STARTERS_PRIVATE_KEY: ${{ secrets.CLASH_STARTERS_PRIVATE_KEY }}
+          CLASH_STARTERS_PUBLIC_KEY: ${{ secrets.CLASH_STARTERS_PUBLIC_KEY }}
+        run: |
+          .ci/render_and_check.sh
+          .ci/test_projects.sh
+          .ci/install_ssh_keys.sh
+          .ci/publish.sh ${GITHUB_REF#refs/heads/}
