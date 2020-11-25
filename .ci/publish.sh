@@ -6,7 +6,7 @@ IFS=$'\n\t'
 cd "$(git rev-parse --show-toplevel)"
 
 # Clone clash-starters and rollback to very first commit
-git clone git@github.com:clash-lang/clash-starters.git
+git clone https://github.com/clash-lang/clash-starters.git
 cd clash-starters
     first_commit=$(git rev-list --max-parents=0 --abbrev-commit HEAD)
     git reset "${first_commit}" --hard
@@ -31,5 +31,7 @@ git add -A
 git commit -m "Automated push from clash-lang/stack-templates"
 
 if [[ "$1" == "master" ]]; then
-    git push -f
+    .ci/install_ssh_keys.sh
+    git remote add origin-ssh git@github.com:clash-lang/clash-starters.git
+    git push -f origin-ssh "$(git branch --show-current)"
 fi
