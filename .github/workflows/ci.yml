@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ['docker.pkg.github.com/clash-lang/stack-templates/focal-ghc-cabal-stack:2020-11-24']
+        container: ['docker.pkg.github.com/clash-lang/stack-templates/focal-ghc-cabal-stack:2020-11-25']
 
     steps:
       - name: Get Date
@@ -25,12 +25,12 @@ jobs:
           cache-name: cache-dependencies
         with:
           path: |
-            ~/.stack
-            ~/.cabal
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ steps.get-date.outputs.date }}
+            stack.tar.xz
+            cabal.tar.xz
+          key: ${{ runner.os }}-xz-${{ env.cache-name }}-${{ steps.get-date.outputs.date }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
+            ${{ runner.os }}-xz-${{ env.cache-name }}-
+            ${{ runner.os }}-xz-
             ${{ runner.os }}-
 
       - uses: actions/checkout@v2
@@ -39,8 +39,15 @@ jobs:
         env:
           CLASH_STARTERS_PRIVATE_KEY: ${{ secrets.CLASH_STARTERS_PRIVATE_KEY }}
           CLASH_STARTERS_PUBLIC_KEY: ${{ secrets.CLASH_STARTERS_PUBLIC_KEY }}
+          XZ_OPT: -1 -T 0
         run: |
+          time tar xf stack.tar.xz -C / || true
+          time tar xf cabal.tar.xz -C / || true
+
           .ci/render_and_check.sh
           .ci/test_projects.sh
           .ci/install_ssh_keys.sh
           .ci/publish.sh ${GITHUB_REF#refs/heads/}
+
+          time tar -Ixz -cf stack.tar.xz ~/.stack
+          time tar -Ixz -cf cabal.tar.xz ~/.cabal
