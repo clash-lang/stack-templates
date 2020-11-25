@@ -1,0 +1,26 @@
+tests:
+  image: docker.pkg.github.com/clash-lang/stack-templates/focal-ghc-cabal-stack:2020-11-25
+  timeout: 2 hours
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  cache:
+    key: cabal-stack-$CI_JOB_NAME
+    when: always
+    paths:
+      - cache.tar.xz
+  script:
+    # Extract cache
+    - tar -xf cache.tar.xz -C / || true
+
+    # Tests
+    - .ci/render_and_check.sh
+    - .ci/test_projects.sh
+    - .ci/publish.sh ${CI_COMMIT_REF_NAME}
+
+    # Save cache
+    - XZ_OPT="-T 0 -1" tar -Ixz -cf cache.tar.xz /root/.cabal /root/.stack
+  tags:
+    - local
