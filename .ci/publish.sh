@@ -3,7 +3,9 @@ set -euo pipefail
 set -x
 IFS=$'\n\t'
 
-cd "$(git rev-parse --show-toplevel)"
+ROOT=$(git rev-parse --show-toplevel)
+
+cd "${ROOT}"
 
 # Clone clash-starters and rollback to very first commit
 git clone https://github.com/clash-lang/clash-starters.git
@@ -31,7 +33,8 @@ git add -A
 git commit -m "Automated push from clash-lang/stack-templates"
 
 if [[ "$1" == "master" ]]; then
-    .ci/install_ssh_keys.sh
+    "${ROOT}"/.ci/install_ssh_keys.sh
     git remote add origin-ssh git@github.com:clash-lang/clash-starters.git
+    export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     git push -f origin-ssh "$(git branch --show-current)"
 fi
