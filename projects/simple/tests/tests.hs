@@ -1,5 +1,10 @@
 import Prelude
+
+import Test.Tasty
+
 import qualified Tests.Example.Project
 
 main :: IO ()
-main = Tests.Example.Project.main
+main = defaultMain $ testGroup "."
+  [ Tests.Example.Project.tests
+  ]

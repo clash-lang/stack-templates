@@ -1,21 +1,26 @@
 module Tests.Example.Project where
 
 import Prelude
+
 import Test.Tasty
-import qualified Test.Tasty.QuickCheck as T
+import Test.Tasty.TH
+import Test.Tasty.Hedgehog
+
+import Hedgehog ((===))
+import qualified Hedgehog as H
+import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
 
 import Example.Project (plus)
 
-main :: IO ()
-main = defaultMain tests
-
-aEqualsA :: Int -> Bool
-aEqualsA a = a == a
-
+prop_plusIsCommutative :: H.Property
+prop_plusIsCommutative = H.property $ do
+  a <- H.forAll (Gen.integral (Range.linear minBound maxBound))
+  b <- H.forAll (Gen.integral (Range.linear minBound maxBound))
+  plus a b === plus b a
 
 tests :: TestTree
-tests = testGroup "Example"
-  [ testGroup "Project"
-    [ T.testProperty "plus a b == plus b a" (\a b -> plus a b == plus b a)
-    ]
-  ]
+tests = $(testGroupGenerator)
+
+main :: IO ()
+main = defaultMain tests
