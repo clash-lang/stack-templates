@@ -31,7 +31,7 @@ This document will give a tour of all the files present in this starter project.
 
 # Files
 ## {{name}}.cabal
-This is the most important file in your project. It describes how to build your project. Even though it ends in `.cabal`, Stack will use this file too. It starts of with meta information:
+This is the most important file in your project. It describes how to build your project. Even though it ends in `.cabal`, Stack will use this file too. It starts of with meta-information:
 
 ```yaml
 cabal-version:       2.4
@@ -84,7 +84,23 @@ library
   default-language: Haskell2010
 ```
 
-Note that extra dependencies could be added by adding a `build-depends` line to this section. Last but not least, a testsuite stanza is defined:
+Note that extra dependencies could be added by adding a `build-depends` line to this section. The following section defines a testsuite called _doctests_. Doctests are tests that are defined in the documentation of your project. We'll see this in action in [src/](#src).
+
+```yaml
+test-suite doctests
+  import:           common-options
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  hs-source-dirs:   tests
+
+  build-depends:
+    base,
+    doctest >= 0.16.1 && < 0.18,
+    clash-prelude
+```
+
+Last but not least, another testsuite stanza is defined:
 
 ```yaml
 test-suite test-library
@@ -93,7 +109,7 @@ test-suite test-library
   hs-source-dirs: tests
   type: exitcode-stdio-1.0
   ghc-options: -threaded
-  main-is: tests.hs
+  main-is: unittests.hs
   other-modules:
     Tests.Example.Project
   build-depends:
@@ -105,12 +121,12 @@ test-suite test-library
     tasty-th
 ```
 
-This test-suite, and if defined others, are executed when using `stack test` or `cabal test`. More on tests in [/tests](#tests).
+These testsuites are executed when using `stack test` or `cabal test --enable-tests`. Note that Cabal swallows the output if more than one testsuite is defined, as is the case here. You might want to consider running the testsuites separately. More on tests in [/tests](#tests).
 
 ## cabal.project
 A `cabal.project` file is used to configure details of the build, more info can be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html). We use it to disable a build flag on `clash-prelude`: `large-tuples`. It is ignored by Stack.
 
-```yaml
+```haskell
 packages:
   {{name}}.cabal
 
@@ -144,16 +160,24 @@ This project uses [lts-16.23](https://www.stackage.org/lts-16.23), which include
 Similar to `cabal.project`, this is where we specify any build flags for dependencies.
 
 ## src/
-This is where the source code of the project lives, as specified in `{{name}}.cabal`. It contains a single file, `Example/Project.hs`:
+This is where the source code of the project lives, as specified in `{{name}}.cabal`. It contains a single file, `Example/Project.hs` which starts with:
 
 ```haskell
 module Example.Project (topEntity, plus) where
 
 import Clash.Prelude
 
+-- | Add two numbers. Example:
+--
+-- >>> plus 3 5
+-- 8
 plus :: Signed 8 -> Signed 8 -> Signed 8
 plus a b = a + b
+```
 
+`{{name}}.cabal` enabled `NoImplicitPrelude` which enables the use of `Clash.Prelude` here. Next, a function `plus` is defined. It simply adds two numbers. Note that the example (`>>> plus 3 5`) gets executed by the _doctests_ defined for this project and checked for consistency with the result in the documentation (`8`).
+
+```haskell
 -- | 'topEntity' is Clash's equivalent of 'main' in other programming
 -- languages. Clash will look for it when compiling 'Example.Project'
 -- and translate it to HDL. While polymorphism can be used freely in
