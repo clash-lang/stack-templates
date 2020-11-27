@@ -19,6 +19,7 @@ for project in *.hsfiles; do
     cabal update
     cabal build
     cabal run test-library --enable-tests
+    cabal run doctests --enable-tests
     cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
 
     # Clean up

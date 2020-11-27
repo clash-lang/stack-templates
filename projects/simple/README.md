@@ -61,6 +61,7 @@ To run the tests defined in `tests/`, use:
 
 ```bash
 cabal run test-library --enable-tests
+cabal run doctests --enable-tests
 ```
 
 To compile the project to VHDL, run:
