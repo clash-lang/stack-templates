@@ -78,10 +78,15 @@ This starter project contains the scaffolding needed to integrate Clash with the
 - [Building and testing this project](#building-and-testing-this-project)
   - [Stack (Windows, Linux, MacOS) [recommended]](#stack-windows-linux-macos-recommended)
   - [Cabal (Linux, MacOS)](#cabal-linux-macos)
-- [REPL](#repl)
-- [Extending this project](#extending-this-project)
+  - [REPL](#repl)
+  - [IDE support](#ide-support)
+- [Project overview](#project-overview)
+  - [{{name}}.cabal](#namecabal)
+  - [cabal.project](#cabalproject)
+  - [stack.yaml](#stackyaml)
+  - [src/](#src)
+  - [tests/](#tests)
 - [Change the license](#change-the-license)
-- [IDE support](#ide-support)
 
 # Getting this project
 Stack users can run `stack new my-clash-project clash-lang/simple`. Cabal users can [download a zip](https://raw.githubusercontent.com/clash-lang/clash-starters/main/simple.zip) containing the project.
@@ -131,6 +136,7 @@ To run the tests defined in `tests/`, use:
 
 ```bash
 cabal run test-library --enable-tests
+cabal run doctests --enable-tests
 ```
 
 To compile the project to VHDL, run:
@@ -141,7 +147,7 @@ cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
 
 You can find the HDL files in `vhdl/`. The source can be found in `src/Example/Project.hs`.
 
-# REPL
+## REPL
 Clash offers a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) as a quick way to try things, similar to Python's `python` or Ruby's `irb`. Stack users can open the REPL by invoking:
 
 ```
@@ -154,26 +160,11 @@ Cabal users use:
 cabal run --write-ghc-environment-files=always clashi
 ```
 
-# Extending this project
-Head over to [TOUR.md](TOUR.md).
-
-# Change the license
-By default `{{name}}.cabal` sets its `license` field to `BSD-2-Clause`. You might want to change this.
-
-# IDE support
+## IDE support
 We currently recommend Visual Studio Code in combination with the _Haskell_ plugin. All you need to do is open this folder in VSCode; it will prompt you to install the plugin.
 
-{-# START_FILE Setup.hs #-}
-import Prelude
-import Distribution.Extra.Doctest (defaultMainWithDoctests)
-
-main :: IO ()
-main = defaultMainWithDoctests "doctests"
-
-{-# START_FILE TOUR.md #-}
-<!-- omit in toc -->
-# Getting started with Clash
-This document will give a tour of all the files present in this starter project. It's also a general introduction into Clash dependency management. It's not an introduction to Clash itself though. If you're looking for an introduction to Clash, read ["Clash.Tutorial" on Hackage](https://hackage.haskell.org/package/clash-prelude).
+# Project overview
+This section will give a tour of all the files present in this starter project. It's also a general introduction into Clash dependency management. It's not an introduction to Clash itself though. If you're looking for an introduction to Clash, read ["Clash.Tutorial" on Hackage](https://hackage.haskell.org/package/clash-prelude).
 
 ```
 {{name}}
@@ -187,24 +178,15 @@ This document will give a tour of all the files present in this starter project.
 │   ├── Tests
 │   │   └── Example
 │   │       └── Project.hs
-│   └── tests.hs
+│   ├── doctests.hs
+│   └── unittests.hs
 ├── cabal.project
 ├── {{name}}.cabal
 └── stack.yaml
 ```
 
-<!-- omit in toc -->
-# Table of contents
-- [Files](#files)
-  - [{{name}}.cabal](#namecabal)
-  - [cabal.project](#cabalproject)
-  - [stack.yaml](#stackyaml)
-  - [src/](#src)
-  - [tests/](#tests)
-
-# Files
 ## {{name}}.cabal
-This is the most important file in your project. It describes how to build your project. Even though it ends in `.cabal`, Stack will use this file too. It starts of with meta information:
+This is the most important file in your project. It describes how to build your project. Even though it ends in `.cabal`, Stack will use this file too. It starts of with meta-information:
 
 ```yaml
 cabal-version:       2.4
@@ -257,7 +239,23 @@ library
   default-language: Haskell2010
 ```
 
-Note that extra dependencies could be added by adding a `build-depends` line to this section. Last but not least, a testsuite stanza is defined:
+Note that extra dependencies could be added by adding a `build-depends` line to this section. The following section defines a testsuite called _doctests_. Doctests are tests that are defined in the documentation of your project. We'll see this in action in [src/](#src).
+
+```yaml
+test-suite doctests
+  import:           common-options
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  hs-source-dirs:   tests
+
+  build-depends:
+    base,
+    doctest >= 0.16.1 && < 0.18,
+    clash-prelude
+```
+
+Last but not least, another testsuite stanza is defined:
 
 ```yaml
 test-suite test-library
@@ -266,7 +264,7 @@ test-suite test-library
   hs-source-dirs: tests
   type: exitcode-stdio-1.0
   ghc-options: -threaded
-  main-is: tests.hs
+  main-is: unittests.hs
   other-modules:
     Tests.Example.Project
   build-depends:
@@ -278,12 +276,12 @@ test-suite test-library
     tasty-th
 ```
 
-This test-suite, and if defined others, are executed when using `stack test` or `cabal test`. More on tests in [/tests](#tests).
+These testsuites are executed when using `stack test` or `cabal test --enable-tests`. Note that Cabal swallows the output if more than one testsuite is defined, as is the case here. You might want to consider running the testsuites separately. More on tests in [/tests](#tests).
 
 ## cabal.project
 A `cabal.project` file is used to configure details of the build, more info can be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html). We use it to disable a build flag on `clash-prelude`: `large-tuples`. It is ignored by Stack.
 
-```yaml
+```haskell
 packages:
   {{name}}.cabal
 
@@ -317,16 +315,24 @@ This project uses [lts-16.23](https://www.stackage.org/lts-16.23), which include
 Similar to `cabal.project`, this is where we specify any build flags for dependencies.
 
 ## src/
-This is where the source code of the project lives, as specified in `{{name}}.cabal`. It contains a single file, `Example/Project.hs`:
+This is where the source code of the project lives, as specified in `{{name}}.cabal`. It contains a single file, `Example/Project.hs` which starts with:
 
 ```haskell
 module Example.Project (topEntity, plus) where
 
 import Clash.Prelude
 
+-- | Add two numbers. Example:
+--
+-- >>> plus 3 5
+-- 8
 plus :: Signed 8 -> Signed 8 -> Signed 8
 plus a b = a + b
+```
 
+`{{name}}.cabal` enabled `NoImplicitPrelude` which enables the use of `Clash.Prelude` here. Next, a function `plus` is defined. It simply adds two numbers. Note that the example (`>>> plus 3 5`) gets executed by the _doctests_ defined for this project and checked for consistency with the result in the documentation (`8`).
+
+```haskell
 -- | 'topEntity' is Clash's equivalent of 'main' in other programming
 -- languages. Clash will look for it when compiling 'Example.Project'
 -- and translate it to HDL. While polymorphism can be used freely in
@@ -387,6 +393,16 @@ We can run the tests using `stack test` or `cabal run test-library --enable-test
 
 All 1 tests passed (0.00s)
 ```
+
+# Change the license
+By default `{{name}}.cabal` sets its `license` field to `BSD-2-Clause`. You might want to change this.
+
+{-# START_FILE Setup.hs #-}
+import Prelude
+import Distribution.Extra.Doctest (defaultMainWithDoctests)
+
+main :: IO ()
+main = defaultMainWithDoctests "doctests"
 
 {-# START_FILE bin/Clash.hs #-}
 
@@ -599,6 +615,18 @@ executable clashi
     ghc-options: -dynamic
   build-depends: base, clash-ghc, {{name}}
 
+test-suite doctests
+  import:           common-options
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  hs-source-dirs:   tests
+
+  build-depends:
+    base,
+    doctest >= 0.16.1 && < 0.18,
+    clash-prelude
+
 test-suite test-library
   import: common-options
   default-language: Haskell2010
@@ -615,16 +643,4 @@ test-suite test-library
     tasty >= 1.2 && < 1.3,
     tasty-hedgehog,
     tasty-th
-
-test-suite doctests
-  import:           common-options
-  type:             exitcode-stdio-1.0
-  default-language: Haskell2010
-  main-is:          doctests.hs
-  hs-source-dirs:   tests
-
-  build-depends:
-    base,
-    doctest >= 0.16.1 && < 0.18,
-    clash-prelude
 
