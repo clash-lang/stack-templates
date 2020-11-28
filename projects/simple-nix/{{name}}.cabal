@@ -62,7 +62,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.2.5 && < 1.4,
+    clash-prelude >= 1.2.4 && < 1.4,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -86,15 +86,11 @@ executable clash
   main-is: bin/Clash.hs
   default-language: Haskell2010
   Build-Depends: base, clash-ghc, {{name}}
-  if !os(Windows)
-    ghc-options: -dynamic
 
 -- Builds the executable 'clashi', with {{name}} project in scope
 executable clashi
   main-is: bin/Clashi.hs
   default-language: Haskell2010
-  if !os(Windows)
-    ghc-options: -dynamic
   build-depends: base, clash-ghc, {{name}}
 
 test-suite doctests
@@ -108,7 +104,7 @@ test-suite doctests
     base,
     {{name}},
     process,
-    doctest >= 0.16.1 && < 0.18
+    doctest >= 0.16.1 && < 0.18,
 
 test-suite test-library
   import: common-options

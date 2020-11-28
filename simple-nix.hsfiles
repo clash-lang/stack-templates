@@ -1,0 +1,575 @@
+{-# START_FILE .vscode/extensions.json #-}
+{
+  "recommendations": ["haskell.haskell"]
+}
+
+{-# START_FILE .vscode/settings.json #-}
+{
+    "files.exclude": {
+        "**/*.dyn_hi": true,
+        "**/*.dyn_o": true,
+        "**/*.hi": true,
+        "**/*.o": true,
+        "**/dist-newstyle": true,
+        "**/.stack-work": true,
+        "**/.ghc.environment.*": true,
+        "**/*.o-boot": true,
+        "**/*.hi-boot": true,
+    },
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.tabSize": 2
+}
+
+{-# START_FILE README.md #-}
+<!-- omit in toc -->
+# Simple Nix Starter Project
+This starter project contains the scaffolding needed to integrate Clash with the Nix Stack build system. Read [Simple Starter Project](https://github.com/clash-lang/clash-starters/blob/main/simple/README.md) for more information on the various files.
+
+<!-- omit in toc -->
+# Table of Contents
+- [Getting this project](#getting-this-project)
+- [Building and testing this project](#building-and-testing-this-project)
+- [REPL](#repl)
+- [Adding custom dependencies / updating nix](#adding-custom-dependencies--updating-nix)
+
+# Getting this project
+Run `nix-shell --packages stack --run "stack new my-clash-project clash-lang/simple-nix"`.
+
+# Building and testing this project
+Build the project with:
+
+```bash
+nix-build
+```
+
+To test and generate HDL, first open a Nix shell by invoking:
+
+```
+nix-shell
+```
+
+Then, to run the tests defined in `tests/`:
+
+```bash
+cabal run test-library
+cabal run doctests
+```
+
+To compile the project to VHDL run:
+
+```bash
+cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
+```
+
+You can find the HDL files in `vhdl/`. The source can be found in `src/Example/Project.hs`.
+
+# REPL
+Clash offers a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) as a quick way to try things, similar to Python's `python` or Ruby's `irb`. Open the REPL by invoking:
+
+```
+cabal run --write-ghc-environment-files=always clashi
+```
+
+# Adding custom dependencies / updating nix
+`niv` is available after opening `nix-shell`. See [niv on Hackage](https://hackage.haskell.org/package/niv) for more information.
+{-# START_FILE Setup.hs #-}
+import Prelude
+import Distribution.Extra.Doctest (defaultMainWithDoctests)
+
+main :: IO ()
+main = defaultMainWithDoctests "doctests"
+
+{-# START_FILE bin/Clash.hs #-}
+
+import Prelude
+import System.Environment (getArgs)
+import Clash.Main (defaultMain)
+
+main :: IO ()
+main = getArgs >>= defaultMain
+
+{-# START_FILE bin/Clashi.hs #-}
+
+import Prelude
+import System.Environment (getArgs)
+import Clash.Main (defaultMain)
+
+main :: IO ()
+main = getArgs >>= defaultMain . ("--interactive":)
+
+{-# START_FILE default.nix #-}
+{ nixpkgs ? import ./nix/nixpkgs.nix {} }:
+
+with nixpkgs.pkgs;
+with gitignore;
+
+haskellPackages.callCabal2nix "{{name}}" (gitignoreSource ./.) {}
+
+{-# START_FILE nix/nixpkgs.nix #-}
+{ sources ? import ./sources.nix }:
+
+let
+  overlay = _: pkgs: {
+
+    # Nix tooling
+    niv = (import sources.niv {}).niv;
+    gitignore = import sources.gitignore { inherit (pkgs) lib; };
+
+    # Haskell overrides
+    haskellPackages = pkgs.haskellPackages.override {
+      overrides = self: super: {
+        # Add overrides here
+      };
+    };
+  };
+
+in import sources.nixpkgs { overlays = [ overlay ]; }
+
+{-# START_FILE nix/sources.json #-}
+{
+    "gitignore": {
+        "branch": "master",
+        "description": "Nix function for filtering local git sources",
+        "homepage": "",
+        "owner": "hercules-ci",
+        "repo": "gitignore",
+        "rev": "c4662e662462e7bf3c2a968483478a665d00e717",
+        "sha256": "1npnx0h6bd0d7ql93ka7azhj40zgjp815fw2r6smg8ch9p7mzdlx",
+        "type": "tarball",
+        "url": "https://github.com/hercules-ci/gitignore/archive/c4662e662462e7bf3c2a968483478a665d00e717.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "niv": {
+        "branch": "master",
+        "description": "Easy dependency management for Nix projects",
+        "homepage": "https://github.com/nmattia/niv",
+        "owner": "nmattia",
+        "repo": "niv",
+        "rev": "ba57d5a29b4e0f2085917010380ef3ddc3cf380f",
+        "sha256": "1kpsvc53x821cmjg1khvp1nz7906gczq8mp83664cr15h94sh8i4",
+        "type": "tarball",
+        "url": "https://github.com/nmattia/niv/archive/ba57d5a29b4e0f2085917010380ef3ddc3cf380f.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nixpkgs": {
+        "branch": "nixos-20.09",
+        "description": "Nix Packages collection",
+        "homepage": "",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ffb3aab257e8851b558cdc6079241a7eb0c7239e",
+        "sha256": "147d4nsq0334skyr9rghcfnizasvba1pr2rq72axwdldlma0qli1",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/ffb3aab257e8851b558cdc6079241a7eb0c7239e.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    }
+}
+
+{-# START_FILE nix/sources.nix #-}
+# This file has been generated by Niv.
+
+let
+
+  #
+  # The fetchers. fetch_<type> fetches specs of type <type>.
+  #
+
+  fetch_file = pkgs: name: spec:
+    let
+      name' = sanitizeName name + "-src";
+    in
+      if spec.builtin or true then
+        builtins_fetchurl { inherit (spec) url sha256; name = name'; }
+      else
+        pkgs.fetchurl { inherit (spec) url sha256; name = name'; };
+
+  fetch_tarball = pkgs: name: spec:
+    let
+      name' = sanitizeName name + "-src";
+    in
+      if spec.builtin or true then
+        builtins_fetchTarball { name = name'; inherit (spec) url sha256; }
+      else
+        pkgs.fetchzip { name = name'; inherit (spec) url sha256; };
+
+  fetch_git = name: spec:
+    let
+      ref =
+        if spec ? ref then spec.ref else
+          if spec ? branch then "refs/heads/${spec.branch}" else
+            if spec ? tag then "refs/tags/${spec.tag}" else
+              abort "In git source '${name}': Please specify `ref`, `tag` or `branch`!";
+    in
+      builtins.fetchGit { url = spec.repo; inherit (spec) rev; inherit ref; };
+
+  fetch_local = spec: spec.path;
+
+  fetch_builtin-tarball = name: throw
+    ''[${name}] The niv type "builtin-tarball" is deprecated. You should instead use `builtin = true`.
+        $ niv modify ${name} -a type=tarball -a builtin=true'';
+
+  fetch_builtin-url = name: throw
+    ''[${name}] The niv type "builtin-url" will soon be deprecated. You should instead use `builtin = true`.
+        $ niv modify ${name} -a type=file -a builtin=true'';
+
+  #
+  # Various helpers
+  #
+
+  # https://github.com/NixOS/nixpkgs/pull/83241/files#diff-c6f540a4f3bfa4b0e8b6bafd4cd54e8bR695
+  sanitizeName = name:
+    (
+      concatMapStrings (s: if builtins.isList s then "-" else s)
+        (
+          builtins.split "[^[:alnum:]+._?=-]+"
+            ((x: builtins.elemAt (builtins.match "\\.*(.*)" x) 0) name)
+        )
+    );
+
+  # The set of packages used when specs are fetched using non-builtins.
+  mkPkgs = sources: system:
+    let
+      sourcesNixpkgs =
+        import (builtins_fetchTarball { inherit (sources.nixpkgs) url sha256; }) { inherit system; };
+      hasNixpkgsPath = builtins.any (x: x.prefix == "nixpkgs") builtins.nixPath;
+      hasThisAsNixpkgsPath = <nixpkgs> == ./.;
+    in
+      if builtins.hasAttr "nixpkgs" sources
+      then sourcesNixpkgs
+      else if hasNixpkgsPath && ! hasThisAsNixpkgsPath then
+        import <nixpkgs> {}
+      else
+        abort
+          ''
+            Please specify either <nixpkgs> (through -I or NIX_PATH=nixpkgs=...) or
+            add a package called "nixpkgs" to your sources.json.
+          '';
+
+  # The actual fetching function.
+  fetch = pkgs: name: spec:
+
+    if ! builtins.hasAttr "type" spec then
+      abort "ERROR: niv spec ${name} does not have a 'type' attribute"
+    else if spec.type == "file" then fetch_file pkgs name spec
+    else if spec.type == "tarball" then fetch_tarball pkgs name spec
+    else if spec.type == "git" then fetch_git name spec
+    else if spec.type == "local" then fetch_local spec
+    else if spec.type == "builtin-tarball" then fetch_builtin-tarball name
+    else if spec.type == "builtin-url" then fetch_builtin-url name
+    else
+      abort "ERROR: niv spec ${name} has unknown type ${builtins.toJSON spec.type}";
+
+  # If the environment variable NIV_OVERRIDE_${name} is set, then use
+  # the path directly as opposed to the fetched source.
+  replace = name: drv:
+    let
+      saneName = stringAsChars (c: if isNull (builtins.match "[a-zA-Z0-9]" c) then "_" else c) name;
+      ersatz = builtins.getEnv "NIV_OVERRIDE_${saneName}";
+    in
+      if ersatz == "" then drv else ersatz;
+
+  # Ports of functions for older nix versions
+
+  # a Nix version of mapAttrs if the built-in doesn't exist
+  mapAttrs = builtins.mapAttrs or (
+    f: set: with builtins;
+    listToAttrs (map (attr: { name = attr; value = f attr set.${attr}; }) (attrNames set))
+  );
+
+  # https://github.com/NixOS/nixpkgs/blob/0258808f5744ca980b9a1f24fe0b1e6f0fecee9c/lib/lists.nix#L295
+  range = first: last: if first > last then [] else builtins.genList (n: first + n) (last - first + 1);
+
+  # https://github.com/NixOS/nixpkgs/blob/0258808f5744ca980b9a1f24fe0b1e6f0fecee9c/lib/strings.nix#L257
+  stringToCharacters = s: map (p: builtins.substring p 1 s) (range 0 (builtins.stringLength s - 1));
+
+  # https://github.com/NixOS/nixpkgs/blob/0258808f5744ca980b9a1f24fe0b1e6f0fecee9c/lib/strings.nix#L269
+  stringAsChars = f: s: concatStrings (map f (stringToCharacters s));
+  concatMapStrings = f: list: concatStrings (map f list);
+  concatStrings = builtins.concatStringsSep "";
+
+  # https://github.com/NixOS/nixpkgs/blob/8a9f58a375c401b96da862d969f66429def1d118/lib/attrsets.nix#L331
+  optionalAttrs = cond: as: if cond then as else {};
+
+  # fetchTarball version that is compatible between all the versions of Nix
+  builtins_fetchTarball = { url, name ? null, sha256 }@attrs:
+    let
+      inherit (builtins) lessThan nixVersion fetchTarball;
+    in
+      if lessThan nixVersion "1.12" then
+        fetchTarball ({ inherit url; } // (optionalAttrs (!isNull name) { inherit name; }))
+      else
+        fetchTarball attrs;
+
+  # fetchurl version that is compatible between all the versions of Nix
+  builtins_fetchurl = { url, name ? null, sha256 }@attrs:
+    let
+      inherit (builtins) lessThan nixVersion fetchurl;
+    in
+      if lessThan nixVersion "1.12" then
+        fetchurl ({ inherit url; } // (optionalAttrs (!isNull name) { inherit name; }))
+      else
+        fetchurl attrs;
+
+  # Create the final "sources" from the config
+  mkSources = config:
+    mapAttrs (
+      name: spec:
+        if builtins.hasAttr "outPath" spec
+        then abort
+          "The values in sources.json should not have an 'outPath' attribute"
+        else
+          spec // { outPath = replace name (fetch config.pkgs name spec); }
+    ) config.sources;
+
+  # The "config" used by the fetchers
+  mkConfig =
+    { sourcesFile ? if builtins.pathExists ./sources.json then ./sources.json else null
+    , sources ? if isNull sourcesFile then {} else builtins.fromJSON (builtins.readFile sourcesFile)
+    , system ? builtins.currentSystem
+    , pkgs ? mkPkgs sources system
+    }: rec {
+      # The sources, i.e. the attribute set of spec name to spec
+      inherit sources;
+
+      # The "pkgs" (evaluated nixpkgs) to use for e.g. non-builtin fetchers
+      inherit pkgs;
+    };
+
+in
+mkSources (mkConfig {}) // { __functor = _: settings: mkSources (mkConfig settings); }
+
+{-# START_FILE release.nix #-}
+let
+  pkgs = import ./nix/nixpkgs.nix { };
+in
+  pkgs.haskellPackages.callPackage ./default.nix { }
+
+{-# START_FILE shell.nix #-}
+{ nixpkgs ? import ./nix/nixpkgs.nix {} }:
+let
+  inherit (nixpkgs) pkgs;
+  inherit (pkgs) haskellPackages;
+
+  project = import ./release.nix;
+in
+pkgs.stdenv.mkDerivation {
+  name = "shell";
+  buildInputs = project.env.nativeBuildInputs ++ [
+    haskellPackages.cabal-install
+  ];
+  LC_ALL = "C.UTF-8";
+}
+
+{-# START_FILE src/Example/Project.hs #-}
+module Example.Project (topEntity, plus) where
+
+import Clash.Prelude
+
+-- | Add two numbers. Example:
+--
+-- >>> plus 3 5
+-- 8
+plus :: Signed 8 -> Signed 8 -> Signed 8
+plus a b = a + b
+
+-- | 'topEntity' is Clash's equivalent of 'main' in other programming
+-- languages. Clash will look for it when compiling 'Example.Project'
+-- and translate it to HDL. While polymorphism can be used freely in
+-- Clash projects, a 'topEntity' must be monomorphic and must use non-
+-- recursive types. Or, to put it hand-wavily, a 'topEntity' must be
+-- translatable to a static number of wires.
+topEntity :: Signed 8 -> Signed 8 -> Signed 8
+topEntity = plus
+
+{-# START_FILE stack.yaml #-}
+resolver: lts-16.23
+
+{-# START_FILE tests/Tests/Example/Project.hs #-}
+module Tests.Example.Project where
+
+import Prelude
+
+import Test.Tasty
+import Test.Tasty.TH
+import Test.Tasty.Hedgehog
+
+import Hedgehog ((===))
+import qualified Hedgehog as H
+import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
+
+import Example.Project (plus)
+
+prop_plusIsCommutative :: H.Property
+prop_plusIsCommutative = H.property $ do
+  a <- H.forAll (Gen.integral (Range.linear minBound maxBound))
+  b <- H.forAll (Gen.integral (Range.linear minBound maxBound))
+  plus a b === plus b a
+
+tests :: TestTree
+tests = $(testGroupGenerator)
+
+main :: IO ()
+main = defaultMain tests
+
+{-# START_FILE tests/doctests.hs #-}
+module Main where
+
+import Prelude
+import Build_doctests (flags, pkgs, module_sources)
+import Test.DocTest (doctest)
+import System.Environment (lookupEnv)
+import System.Process
+
+getGlobalPackageDb :: IO String
+getGlobalPackageDb = readProcess "ghc" ["--print-global-package-db"] ""
+
+main :: IO ()
+main = do
+  inNixShell <-lookupEnv "IN_NIX_SHELL"
+  extraFlags <-
+    case inNixShell of
+      Nothing -> pure []
+      Just _ -> pure . ("-package-db="++) <$> getGlobalPackageDb
+
+  doctest (flags ++ extraFlags ++ pkgs ++ module_sources)
+
+{-# START_FILE tests/unittests.hs #-}
+import Prelude
+
+import Test.Tasty
+
+import qualified Tests.Example.Project
+
+main :: IO ()
+main = defaultMain $ testGroup "."
+  [ Tests.Example.Project.tests
+  ]
+
+{-# START_FILE {{name}}.cabal #-}
+cabal-version:       2.4
+name:                {{name}}
+version:             0.1
+license:             BSD-2-Clause
+author:              John Smith <john@example.com>
+maintainer:          John Smith <john@example.com>
+
+common common-options
+  default-extensions:
+    BangPatterns
+    BinaryLiterals
+    ConstraintKinds
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    NoStarIsType
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    ViewPatterns
+
+    -- TemplateHaskell is used to support convenience functions such as
+    -- 'listToVecTH' and 'bLit'.
+    TemplateHaskell
+    QuasiQuotes
+
+    -- Prelude isn't imported by default as Clash offers Clash.Prelude
+    NoImplicitPrelude
+  ghc-options:
+    -Wall -Wcompat
+    -haddock
+
+    -- Plugins to support type-level constraint solving on naturals
+    -fplugin GHC.TypeLits.Extra.Solver
+    -fplugin GHC.TypeLits.Normalise
+    -fplugin GHC.TypeLits.KnownNat.Solver
+
+    -- Clash needs access to the source code in compiled modules
+    -fexpose-all-unfoldings
+
+    -- Worker wrappers introduce unstable names for functions that might have
+    -- blackboxes attached for them. You can disable this, but be sure to add
+    -- a no-specialize pragma to every function with a blackbox.
+    -fno-worker-wrapper
+  build-depends:
+    base,
+    Cabal,
+
+    -- clash-prelude will set suitable version bounds for the plugins
+    clash-prelude >= 1.2.4 && < 1.4,
+    ghc-typelits-natnormalise,
+    ghc-typelits-extra,
+    ghc-typelits-knownnat
+
+
+custom-setup
+  setup-depends:
+    base          >= 4.11 && <5,
+    Cabal         >= 2.4,
+    cabal-doctest >= 1.0.1 && <1.1
+
+library
+  import: common-options
+  hs-source-dirs: src
+  exposed-modules:
+    Example.Project
+  default-language: Haskell2010
+
+-- Builds the executable 'clash', with {{name}} project in scope
+executable clash
+  main-is: bin/Clash.hs
+  default-language: Haskell2010
+  Build-Depends: base, clash-ghc, {{name}}
+
+-- Builds the executable 'clashi', with {{name}} project in scope
+executable clashi
+  main-is: bin/Clashi.hs
+  default-language: Haskell2010
+  build-depends: base, clash-ghc, {{name}}
+
+test-suite doctests
+  import:           common-options
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  hs-source-dirs:   tests
+
+  build-depends:
+    base,
+    {{name}},
+    process,
+    doctest >= 0.16.1 && < 0.18,
+
+test-suite test-library
+  import: common-options
+  default-language: Haskell2010
+  hs-source-dirs: tests
+  type: exitcode-stdio-1.0
+  ghc-options: -threaded
+  main-is: unittests.hs
+  other-modules:
+    Tests.Example.Project
+  build-depends:
+    {{name}},
+    QuickCheck,
+    hedgehog,
+    tasty >= 1.2 && < 1.3,
+    tasty-hedgehog,
+    tasty-th
+

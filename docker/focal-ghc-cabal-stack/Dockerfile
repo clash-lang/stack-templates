@@ -38,4 +38,4 @@ RUN  apt-get update \
 
 # Compression utils
 RUN  apt-get update \
-  && apt-get -y install tar xz-utils zip
+  && apt-get -y install tar zip zstd
