@@ -10,11 +10,6 @@ for project in *.hsfiles; do
 
     cd inst
 
-    # Build and test with Stack
-    stack build
-    stack test
-    stack run clash -- Example.Project --vhdl
-
     # Build and test with Cabal
     cabal update
     cabal build
