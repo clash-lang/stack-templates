@@ -51,8 +51,11 @@ nix:
 
 # If all tests pass, publish to 'clash-lang/clash-starters'.
 publish:
+  image: docker.pkg.github.com/clash-lang/stack-templates/publish:2020-11-30
   stage: publish
   script:
+    - apt-get update
+    - apt-install -y git ssh zip gzip tar coreutils haskell-stack
     - .ci/publish.sh
   only:
     refs:
