@@ -25,6 +25,7 @@ for hsfile in *.hsfiles; do
     mv "${project}" clash-starters
     cd clash-starters
         zip -r "${project}.zip" "${project}"
+        tar -czf "${project}.tar.gz" "${project}"
     cd ..
 done
 
