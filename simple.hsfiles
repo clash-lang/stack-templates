@@ -299,7 +299,7 @@ package clash-prelude
 While Cabal fetches packages straight from Hackage (with a bias towards the latest versions), Stack works through _snapshots_. Snapshots are an index of packages from Hackage know to work well with each other. In addition to that, they specify a GHC version. These snapshots are curated by the community and FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-16.23
+resolver: lts-17.2
 
 flags:
   clash-prelude:
@@ -310,7 +310,7 @@ flags:
     large-tuples: false
 ```
 
-This project uses [lts-16.23](https://www.stackage.org/lts-16.23), which includes Clash 1.2.5. If `{{name}}.cabal` constrains a dependency such that it cannot be fetched from the snapshot, Stack will ask you to add it to `stack.yaml`. Stack will then fetch it from Hackage. The point of this exercise is to make reproducible builds. Or in other words, if a `stack build` works now, it will work in 10 years too.
+This project uses [lts-17.2](https://www.stackage.org/lts-17.2), which includes Clash 1.2.5. If `{{name}}.cabal` constrains a dependency such that it cannot be fetched from the snapshot, Stack will ask you to add it to `stack.yaml`. Stack will then fetch it from Hackage. The point of this exercise is to make reproducible builds. Or in other words, if a `stack build` works now, it will work in 10 years too.
 
 Similar to `cabal.project`, this is where we specify any build flags for dependencies.
 
@@ -455,7 +455,7 @@ topEntity :: Signed 8 -> Signed 8 -> Signed 8
 topEntity = plus
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-16.23
+resolver: lts-17.2
 
 flags:
   clash-prelude:

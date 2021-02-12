@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {- stack script
- --resolver lts-16.23
+ --resolver lts-17.2
  --install-ghc
  --package bytestring
  --package directory
