@@ -20,6 +20,7 @@ stages:
     - tar -cf - $(ls -d /root/.cabal /root/.stack /nix || true) | zstd -T0 -3 > cache.tar.zstd
   cache:
     key: $CI_JOB_NAME
+    when: always
     paths:
       - cache.tar.zstd
 
