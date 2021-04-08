@@ -98,6 +98,12 @@ import Clash.Main (defaultMain)
 main :: IO ()
 main = getArgs >>= defaultMain . ("--interactive":)
 
+{-# START_FILE cabal.project #-}
+packages:
+  {{name}}.cabal
+
+write-ghc-environment-files: always
+
 {-# START_FILE default.nix #-}
 { nixpkgs ? import ./nix/nixpkgs.nix {} }:
 
@@ -383,7 +389,7 @@ topEntity :: Signed 8 -> Signed 8 -> Signed 8
 topEntity = plus
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-17.2
+resolver: lts-17.9
 
 {-# START_FILE tests/Tests/Example/Project.hs #-}
 module Tests.Example.Project where
@@ -512,7 +518,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.2.4 && < 1.4,
+    clash-prelude >= 1.2.4 && < 1.6,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat

@@ -1,9 +1,11 @@
-resolver: lts-17.2
+resolver: lts-17.9
 
-flags:
-  clash-prelude:
-    # 'large-tuples' generates tuple instances for various classes up to the
-    # GHC imposed maximum of 62 elements. This severely slows down compiling
-    # Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
-    # it by default. This will be the default for Clash >=1.4.
-    large-tuples: false
+extra-deps:
+  # At the time of writing, no snapshot includes Clash 1.4 yet so we add it - and
+  # its dependencies - manually.
+  - lazysmallcheck-0.6
+  - Stream-0.4.7.2
+  - arrows-0.4.4.2
+  - clash-prelude-1.4.1
+  - clash-lib-1.4.1
+  - clash-ghc-1.4.1

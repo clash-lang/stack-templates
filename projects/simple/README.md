@@ -72,7 +72,7 @@ cabal run doctests --enable-tests
 To compile the project to VHDL, run:
 
 ```bash
-cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
+cabal run clash -- Example.Project --vhdl
 ```
 
 You can find the HDL files in `vhdl/`. The source can be found in `src/Example/Project.hs`.
@@ -87,7 +87,7 @@ stack run clashi
 Cabal users use:
 
 ```
-cabal run --write-ghc-environment-files=always clashi
+cabal run clashi
 ```
 
 ## IDE support
@@ -152,7 +152,7 @@ Note that this whole section is a `common` "stanza". We'll use it as a template 
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.2.5 && < 1.4,
+    clash-prelude >= 1.2.4 && < 1.6,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -209,7 +209,7 @@ test-suite test-library
 These testsuites are executed when using `stack test` or `cabal test --enable-tests`. Note that Cabal swallows the output if more than one testsuite is defined, as is the case here. You might want to consider running the testsuites separately. More on tests in [/tests](#tests).
 
 ## cabal.project
-A `cabal.project` file is used to configure details of the build, more info can be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html). We use it to disable a build flag on `clash-prelude`: `large-tuples`. It is ignored by Stack.
+A `cabal.project` file is used to configure details of the build, more info can be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html). We use it to make Cabal always generate GHC environment files, which is a feature Clash needs when using Cabal. It also sets a flag for older versions of Clash, massively speeding up compilation. It is ignored by Stack.
 
 ```haskell
 packages:
@@ -221,6 +221,8 @@ package clash-prelude
   -- Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
   -- it by default. This will be the default for Clash >=1.4.
   flags: -large-tuples
+
+write-ghc-environment-files: always
 ```
 
 `cabal.project` can be used to build multi-package projects, by extending `packages`.
@@ -229,20 +231,22 @@ package clash-prelude
 While Cabal fetches packages straight from Hackage (with a bias towards the latest versions), Stack works through _snapshots_. Snapshots are an index of packages from Hackage know to work well with each other. In addition to that, they specify a GHC version. These snapshots are curated by the community and FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-17.2
+resolver: lts-17.9
 
-flags:
-  clash-prelude:
-    # 'large-tuples' generates tuple instances for various classes up to the
-    # GHC imposed maximum of 62 elements. This severely slows down compiling
-    # Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
-    # it by default. This will be the default for Clash >=1.4.
-    large-tuples: false
+extra-deps:
+  # At the time of writing, no snapshot includes Clash 1.4 yet so we add it - and
+  # its dependencies - manually.
+  - lazysmallcheck-0.6
+  - Stream-0.4.7.2
+  - arrows-0.4.4.2
+  - clash-prelude-1.4.1
+  - clash-lib-1.4.1
+  - clash-ghc-1.4.1
 ```
 
-This project uses [lts-17.2](https://www.stackage.org/lts-17.2), which includes Clash 1.2.5. If `{{name}}.cabal` constrains a dependency such that it cannot be fetched from the snapshot, Stack will ask you to add it to `stack.yaml`. Stack will then fetch it from Hackage. The point of this exercise is to make reproducible builds. Or in other words, if a `stack build` works now, it will work in 10 years too.
+This project uses [lts-17.9](https://www.stackage.org/lts-17.9), which includes Clash 1.2.5. We've added the extra-deps section to make sure Stack fetches the latest version of Clash, 1.4.1, instead. The point of this exercise is to make reproducible builds. Or in other words, if a `stack build` works now, it will work in 10 years too.
 
-Similar to `cabal.project`, this is where we specify any build flags for dependencies.
+Note: If you need a newer Clash version, simply change the version bounds in `{{name}}.cabal` and follow the hints given by Stack.
 
 ## src/
 This is where the source code of the project lives, as specified in `{{name}}.cabal`. It contains a single file, `Example/Project.hs` which starts with:
