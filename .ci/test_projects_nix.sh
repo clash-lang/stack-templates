@@ -14,10 +14,9 @@ for project in *.hsfiles; do
         # Build and test with nix. Note that nix-build already runs the tests,
         # but we'd also like to be able to run them using just cabal in a shell.
         nix-build
-        cabal="cabal --write-ghc-environment-files=always"
-        nix-shell --pure --run "$cabal run clash -- Example.Project --vhdl"
-        nix-shell --pure --run "$cabal run doctests"
-        nix-shell --pure --run "$cabal run test-library"
+        nix-shell --pure --run "cabal run clash -- Example.Project --vhdl"
+        nix-shell --pure --run "cabal run doctests"
+        nix-shell --pure --run "cabal run test-library"
     fi
 
     # Clean up

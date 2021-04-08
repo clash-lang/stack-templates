@@ -98,6 +98,12 @@ import Clash.Main (defaultMain)
 main :: IO ()
 main = getArgs >>= defaultMain . ("--interactive":)
 
+{-# START_FILE cabal.project #-}
+packages:
+  {{name}}.cabal
+
+write-ghc-environment-files: always
+
 {-# START_FILE default.nix #-}
 { nixpkgs ? import ./nix/nixpkgs.nix {} }:
 

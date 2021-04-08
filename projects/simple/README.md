@@ -72,7 +72,7 @@ cabal run doctests --enable-tests
 To compile the project to VHDL, run:
 
 ```bash
-cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
+cabal run clash -- Example.Project --vhdl
 ```
 
 You can find the HDL files in `vhdl/`. The source can be found in `src/Example/Project.hs`.
@@ -87,7 +87,7 @@ stack run clashi
 Cabal users use:
 
 ```
-cabal run --write-ghc-environment-files=always clashi
+cabal run clashi
 ```
 
 ## IDE support
@@ -209,7 +209,7 @@ test-suite test-library
 These testsuites are executed when using `stack test` or `cabal test --enable-tests`. Note that Cabal swallows the output if more than one testsuite is defined, as is the case here. You might want to consider running the testsuites separately. More on tests in [/tests](#tests).
 
 ## cabal.project
-A `cabal.project` file is used to configure details of the build, more info can be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html). We use it to disable a build flag on `clash-prelude`: `large-tuples`. It is ignored by Stack.
+A `cabal.project` file is used to configure details of the build, more info can be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html). We use it to make Cabal always generate GHC environment files, which is a feature Clash needs when using Cabal. It also sets a flag for older versions of Clash, massively speeding up compilation. It is ignored by Stack.
 
 ```haskell
 packages:
@@ -221,6 +221,8 @@ package clash-prelude
   -- Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
   -- it by default. This will be the default for Clash >=1.4.
   flags: -large-tuples
+
+write-ghc-environment-files: always
 ```
 
 `cabal.project` can be used to build multi-package projects, by extending `packages`.
