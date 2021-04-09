@@ -35,7 +35,7 @@ cabal run doctests
 To compile the project to VHDL run:
 
 ```bash
-cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
+cabal run clash -- Example.Project --vhdl
 ```
 
 You can find the HDL files in `vhdl/`. The source can be found in `src/Example/Project.hs`.
@@ -44,7 +44,7 @@ You can find the HDL files in `vhdl/`. The source can be found in `src/Example/P
 Clash offers a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) as a quick way to try things, similar to Python's `python` or Ruby's `irb`. Open the REPL by invoking:
 
 ```
-cabal run --write-ghc-environment-files=always clashi
+cabal run clashi
 ```
 
 # Adding custom dependencies / updating nix
