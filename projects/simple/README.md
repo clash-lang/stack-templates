@@ -286,7 +286,7 @@ stack run clash -- Example.Project --vhdl
 or
 
 ```
-cabal run clash --write-ghc-environment-files=always -- Example.Project --vhdl
+cabal run clash -- Example.Project --vhdl
 ```
 
 We could instead ask it to synthesize `plus` instead:
