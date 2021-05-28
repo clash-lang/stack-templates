@@ -231,7 +231,7 @@ write-ghc-environment-files: always
 While Cabal fetches packages straight from Hackage (with a bias towards the latest versions), Stack works through _snapshots_. Snapshots are an index of packages from Hackage know to work well with each other. In addition to that, they specify a GHC version. These snapshots are curated by the community and FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-17.9
+resolver: lts-17.13
 
 extra-deps:
   # At the time of writing, no snapshot includes Clash 1.4 yet so we add it - and
@@ -239,12 +239,12 @@ extra-deps:
   - lazysmallcheck-0.6
   - Stream-0.4.7.2
   - arrows-0.4.4.2
-  - clash-prelude-1.4.1
-  - clash-lib-1.4.1
-  - clash-ghc-1.4.1
+  - clash-prelude-1.4.2
+  - clash-lib-1.4.2
+  - clash-ghc-1.4.2
 ```
 
-This project uses [lts-17.9](https://www.stackage.org/lts-17.9), which includes Clash 1.2.5. We've added the extra-deps section to make sure Stack fetches the latest version of Clash, 1.4.1, instead. The point of this exercise is to make reproducible builds. Or in other words, if a `stack build` works now, it will work in 10 years too.
+This project uses [lts-17.13](https://www.stackage.org/lts-17.13), which includes Clash 1.2.5. We've added the extra-deps section to make sure Stack fetches the latest version of Clash, 1.4.2, instead. The point of this exercise is to make reproducible builds. Or in other words, if a `stack build` works now, it will work in 10 years too.
 
 Note: If you need a newer Clash version, simply change the version bounds in `{{name}}.cabal` and follow the hints given by Stack.
 
