@@ -390,7 +390,7 @@ topEntity :: Signed 8 -> Signed 8 -> Signed 8
 topEntity = plus
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-17.9
+resolver: lts-17.13
 
 {-# START_FILE tests/Tests/Example/Project.hs #-}
 module Tests.Example.Project where
