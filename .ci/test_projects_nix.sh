@@ -14,7 +14,11 @@ for project in *.hsfiles; do
         # Build and test with nix. Note that nix-build already runs the tests,
         # but we'd also like to be able to run them using just cabal in a shell.
         nix-build
-        nix-shell --pure --run "cabal run clash -- Example.Project --vhdl"
+        if [[ ${project} != "deca.hsfiles" ]]; then
+            nix-shell --pure --run "cabal run clash -- Example.Project --vhdl"
+        else
+            nix-shell --pure --run "cabal run clash -- DECA --vhdl"
+        fi
         nix-shell --pure --run "cabal run doctests"
         nix-shell --pure --run "cabal run test-library"
     fi
