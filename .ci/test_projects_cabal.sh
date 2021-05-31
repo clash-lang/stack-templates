@@ -15,7 +15,11 @@ for project in *.hsfiles; do
     cabal build
     cabal run test-library --enable-tests
     cabal run doctests --enable-tests
-    cabal run clash -- Example.Project --vhdl
+    if [[ ${project} != "deca.hsfiles" ]]; then
+        cabal run clash -- Example.Project --vhdl
+    else
+        cabal run clash -- DECA --vhdl
+    fi
 
     # Clean up
     cd ..

@@ -1,0 +1,1 @@
+../simple/Setup.hs
