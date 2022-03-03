@@ -430,13 +430,6 @@ main = getArgs >>= defaultMain . ("--interactive":)
 packages:
   {{name}}.cabal
 
-package clash-prelude
-  -- 'large-tuples' generates tuple instances for various classes up to the
-  -- GHC imposed maximum of 62 elements. This severely slows down compiling
-  -- Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
-  -- it by default. This will be the default for Clash >=1.4.
-  flags: -large-tuples
-
 write-ghc-environment-files: always
 
 {-# START_FILE src/Example/Project.hs #-}
@@ -461,17 +454,12 @@ topEntity :: Signed 8 -> Signed 8 -> Signed 8
 topEntity = plus
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-17.13
+resolver: lts-18.27
 
 extra-deps:
-  # At the time of writing, no snapshot includes Clash 1.4 yet so we add it - and
-  # its dependencies - manually.
-  - lazysmallcheck-0.6
-  - Stream-0.4.7.2
-  - arrows-0.4.4.2
-  - clash-prelude-1.4.2
-  - clash-lib-1.4.2
-  - clash-ghc-1.4.2
+  - clash-prelude-1.6.2
+  - clash-lib-1.6.2
+  - clash-ghc-1.6.2
 
 {-# START_FILE tests/Tests/Example/Project.hs #-}
 module Tests.Example.Project where
@@ -600,7 +588,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.2.5 && < 1.6,
+    clash-prelude >= 1.6.2 && < 1.8,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -661,7 +649,7 @@ test-suite test-library
     {{name}},
     QuickCheck,
     hedgehog,
-    tasty >= 1.2 && < 1.3,
+    tasty >= 1.2 && < 1.5,
     tasty-hedgehog,
     tasty-th
 
