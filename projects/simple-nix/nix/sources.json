@@ -1,4 +1,32 @@
 {
+    "clash-ghc": {
+        "sha256": "03kps9vp32r7ri0fbqr2rhbwc6w1qags9fhal38zbmpx8zcd1blx",
+        "type": "tarball",
+        "url": "https://hackage.haskell.org/package/clash-ghc-1.6.2/clash-ghc-1.6.2.tar.gz",
+        "url_template": "https://hackage.haskell.org/package/clash-ghc-<version>/clash-ghc-<version>.tar.gz",
+        "version": "1.6.2"
+    },
+    "clash-lib": {
+        "sha256": "06j722dsfjlnzmkhz57yss7wnww1b2qcy93q62wqi8fnargmk4ak",
+        "type": "tarball",
+        "url": "https://hackage.haskell.org/package/clash-lib-1.6.2/clash-lib-1.6.2.tar.gz",
+        "url_template": "https://hackage.haskell.org/package/clash-lib-<version>/clash-lib-<version>.tar.gz",
+        "version": "1.6.2"
+    },
+    "clash-prelude": {
+        "sha256": "11c9dibg7xx1awn989bcg7djprc7r5q2f2gw7n3xxpd8bp21ypzh",
+        "type": "tarball",
+        "url": "https://hackage.haskell.org/package/clash-prelude-1.6.2/clash-prelude-1.6.2.tar.gz",
+        "url_template": "https://hackage.haskell.org/package/clash-prelude-<version>/clash-prelude-<version>.tar.gz",
+        "version": "1.6.2"
+    },
+    "doctest-parallel": {
+        "sha256": "065v9pf7swydjqhwgy9mz9g6j2yx0if5xd4h4zrk3kl8cfygxn1p",
+        "type": "tarball",
+        "url": "https://hackage.haskell.org/package/doctest-parallel-0.2.2/doctest-parallel-0.2.2.tar.gz",
+        "url_template": "https://hackage.haskell.org/package/doctest-parallel-<version>/doctest-parallel-<version>.tar.gz",
+        "version": "0.2.2"
+    },
     "gitignore": {
         "branch": "master",
         "description": "Nix function for filtering local git sources",
@@ -24,15 +52,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
-        "branch": "nixos-20.09",
+        "branch": "nixos-21.11",
         "description": "Nix Packages collection",
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "ffb3aab257e8851b558cdc6079241a7eb0c7239e",
-        "sha256": "147d4nsq0334skyr9rghcfnizasvba1pr2rq72axwdldlma0qli1",
+        "rev": "b099eaa0e01a45fc3459bbe987c3405c425ef05c",
+        "sha256": "06l6265p21823r092l0nm8fbd60xllnmcw4l2m579pn3japsx332",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/ffb3aab257e8851b558cdc6079241a7eb0c7239e.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/b099eaa0e01a45fc3459bbe987c3405c425ef05c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

@@ -86,7 +86,6 @@ deca clk20 rstBtn modeBtn =
     resetSynchronizer
       clk50
       (unsafeFromLowPolarity pllStable)
-      en
 
 -- | Changes the LED mode
 --
