@@ -211,7 +211,7 @@ common section is some build dependencies:
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.2.4 && < 1.6,
+    clash-prelude >= 1.6.2 && < 1.8,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -248,8 +248,9 @@ test-suite doctests
 
   build-depends:
     base,
-    doctest >= 0.16.1 && < 0.18,
-    clash-prelude
+    {{name}},
+    process,
+    doctest >= 0.16.1 && < 0.18
 ```
 
 Last but not least, another testsuite stanza is defined:
@@ -268,7 +269,7 @@ test-suite test-library
     {{name}},
     QuickCheck,
     hedgehog,
-    tasty >= 1.2 && < 1.3,
+    tasty >= 1.2 && < 1.5,
     tasty-hedgehog,
     tasty-th
 ```
@@ -282,19 +283,11 @@ More on tests in [/tests](#tests).
 A `cabal.project` file is used to configure details of the build, more info can
 be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html).
 We use it to make Cabal always generate GHC environment files, which is a
-feature Clash needs when using Cabal. It also sets a flag for older versions of
-Clash, massively speeding up compilation. It is ignored by Stack.
+feature Clash needs when using Cabal.
 
 ```haskell
 packages:
   {{name}}.cabal
-
-package clash-prelude
-  -- 'large-tuples' generates tuple instances for various classes up to the
-  -- GHC imposed maximum of 62 elements. This severely slows down compiling
-  -- Clash, and triggers Template Haskell bugs on Windows. Hence, we disable
-  -- it by default. This will be the default for Clash >=1.4.
-  flags: -large-tuples
 
 write-ghc-environment-files: always
 ```
@@ -309,24 +302,19 @@ they specify a GHC version. These snapshots are curated by the community and
 FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-17.13
+resolver: lts-18.27
 
 extra-deps:
-  # At the time of writing, no snapshot includes Clash 1.4 yet so we add it - and
-  # its dependencies - manually.
-  - lazysmallcheck-0.6
-  - Stream-0.4.7.2
-  - arrows-0.4.4.2
-  - clash-prelude-1.4.2
-  - clash-lib-1.4.2
-  - clash-ghc-1.4.2
+  - clash-prelude-1.6.2
+  - clash-lib-1.6.2
+  - clash-ghc-1.6.2
 ```
 
-This project uses [lts-17.13](https://www.stackage.org/lts-17.13), which
-includes Clash 1.2.5. We've added the extra-deps section to make sure Stack
-fetches the latest version of Clash, 1.4.2, instead. The point of this exercise
-is to make reproducible builds. Or in other words, if a `stack build` works now,
-it will work in 10 years too.
+This project uses [lts-18.27](https://www.stackage.org/lts-18.27), which
+includes Clash 1.4.7. We've added the extra-deps section to make sure Stack
+fetches the latest version of Clash, 1.6.2, instead. The point of this exercise
+is to make reproducible builds. Or in other words, if a `stack build` works
+now, it will work in 10 years too.
 
 Note: If you need a newer Clash version, simply change the version bounds in
 `{{name}}.cabal` and follow the hints given by Stack.
