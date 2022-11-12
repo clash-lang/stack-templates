@@ -2,7 +2,7 @@ name: stack-templates-ci
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
 
 concurrency:
