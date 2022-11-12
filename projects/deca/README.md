@@ -274,7 +274,7 @@ test-suite test-library
     tasty-th
 ```
 
-These testsuites are executed when using `stack test` or `cabal test --enable-tests`.
+These testsuites are executed when using `stack test` or `cabal test`.
 Note that Cabal swallows the output if more than one testsuite is defined, as
 is the case here. You might want to consider running the testsuites separately.
 More on tests in [/tests](#tests).
@@ -366,7 +366,7 @@ tests :: TestTree
 tests = $(testGroupGenerator)
 ```
 
-We can run the tests using `stack test` or `cabal run test-library --enable-tests`:
+We can run the tests using `stack test` or `cabal run test-library`:
 
 ```
 .

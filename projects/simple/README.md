@@ -65,8 +65,8 @@ cabal build
 To run the tests defined in `tests/`, use:
 
 ```bash
-cabal run test-library --enable-tests
-cabal run doctests --enable-tests
+cabal run test-library
+cabal run doctests
 ```
 
 To compile the project to VHDL, run:
@@ -207,7 +207,7 @@ test-suite test-library
     tasty-th
 ```
 
-These testsuites are executed when using `stack test` or `cabal test --enable-tests`. Note that Cabal swallows the output if more than one testsuite is defined, as is the case here. You might want to consider running the testsuites separately. More on tests in [/tests](#tests).
+These testsuites are executed when using `stack test` or `cabal test`. Note that Cabal swallows the output if more than one testsuite is defined, as is the case here. You might want to consider running the testsuites separately. More on tests in [/tests](#tests).
 
 ## cabal.project
 A `cabal.project` file is used to configure details of the build, more info can be found in the [Cabal user documentation](https://cabal.readthedocs.io/en/latest/cabal-project.html). We use it to make Cabal always generate GHC environment files, which is a feature Clash needs when using Cabal.
@@ -304,7 +304,7 @@ tests :: TestTree
 tests = $(testGroupGenerator)
 ```
 
-We can run the tests using `stack test` or `cabal run test-library --enable-tests`:
+We can run the tests using `stack test` or `cabal run test-library`:
 
 ```
 .
