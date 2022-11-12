@@ -2,3 +2,12 @@ packages:
   {{name}}.cabal
 
 write-ghc-environment-files: always
+
+-- Eliminates the need for `--enable-tests`, which is needed for HLS.
+tests: true
+
+-- Works around: https://github.com/recursion-schemes/recursion-schemes/issues/128. This
+-- shouldn't harm (runtime) performance of Clash, as we only use recursion-schemes with
+-- TemplateHaskell.
+package recursion-schemes
+    optimization: 0

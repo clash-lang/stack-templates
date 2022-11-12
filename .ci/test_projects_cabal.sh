@@ -13,8 +13,8 @@ for project in *.hsfiles; do
     # Build and test with Cabal
     cabal update
     cabal build
-    cabal run test-library --enable-tests
-    cabal run doctests --enable-tests
+    cabal run test-library
+    cabal run doctests
     if [[ ${project} != "deca.hsfiles" ]]; then
         cabal run clash -- Example.Project --vhdl
     else

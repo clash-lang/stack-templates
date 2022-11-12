@@ -1,6 +1,1 @@
-resolver: lts-18.27
-
-extra-deps:
-  - clash-prelude-1.6.3
-  - clash-lib-1.6.3
-  - clash-ghc-1.6.3
+resolver: lts-19.32

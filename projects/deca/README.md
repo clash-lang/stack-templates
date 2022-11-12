@@ -250,7 +250,7 @@ test-suite doctests
     base,
     {{name}},
     process,
-    doctest >= 0.16.1 && < 0.18
+    doctest >= 0.16.1 && < 0.20
 ```
 
 Last but not least, another testsuite stanza is defined:
@@ -274,7 +274,7 @@ test-suite test-library
     tasty-th
 ```
 
-These testsuites are executed when using `stack test` or `cabal test --enable-tests`.
+These testsuites are executed when using `stack test` or `cabal test`.
 Note that Cabal swallows the output if more than one testsuite is defined, as
 is the case here. You might want to consider running the testsuites separately.
 More on tests in [/tests](#tests).
@@ -302,19 +302,13 @@ they specify a GHC version. These snapshots are curated by the community and
 FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-18.27
-
-extra-deps:
-  - clash-prelude-1.6.3
-  - clash-lib-1.6.3
-  - clash-ghc-1.6.3
+resolver: lts-19.32
 ```
 
-This project uses [lts-18.27](https://www.stackage.org/lts-18.27), which
-includes Clash 1.4.7. We've added the extra-deps section to make sure Stack
-fetches the latest version of Clash, 1.6.3, instead. The point of this exercise
-is to make reproducible builds. Or in other words, if a `stack build` works
-now, it will work in 10 years too.
+This project uses [lts-19.32](https://www.stackage.org/lts-19.32), which
+includes Clash 1.6.4. Snapshots tightly couple GHC and package versions. By
+working this way, Stack projects build on a cohesive set of packages. Plus, it
+guarantees that if a `stack build` works now, it will work in 10 years too.
 
 Note: If you need a newer Clash version, simply change the version bounds in
 `{{name}}.cabal` and follow the hints given by Stack.
@@ -372,7 +366,7 @@ tests :: TestTree
 tests = $(testGroupGenerator)
 ```
 
-We can run the tests using `stack test` or `cabal run test-library --enable-tests`:
+We can run the tests using `stack test` or `cabal run test-library`:
 
 ```
 .
