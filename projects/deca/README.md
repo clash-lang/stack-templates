@@ -250,7 +250,7 @@ test-suite doctests
     base,
     {{name}},
     process,
-    doctest >= 0.16.1 && < 0.18
+    doctest >= 0.16.1 && < 0.20
 ```
 
 Last but not least, another testsuite stanza is defined:
