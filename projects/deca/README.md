@@ -211,7 +211,7 @@ common section is some build dependencies:
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.6.3 && < 1.8,
+    clash-prelude >= 1.6.4 && < 1.8,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
