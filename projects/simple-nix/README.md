@@ -19,7 +19,12 @@ Build the project with:
 nix-build
 ```
 
-To test and generate HDL, first open a Nix shell by invoking:
+Verilog code will be available under the `result/share/verilog` directory.
+Modify the `hdl` variable in `default.nix` to configure whether to generate
+SystemVerilog or VHDL.
+
+However development itself is more streamlined by using a Nix shell. Start one 
+by invoking:
 
 ```
 nix-shell
