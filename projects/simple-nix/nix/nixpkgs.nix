@@ -12,13 +12,17 @@ let
       overrides = self: super: {
         # Add overrides here
         doctest-parallel =
-          pkgs.haskell.lib.dontCheck (self.callCabal2nix "doctest-parallel" sources.doctest-parallel {});
+          self.callCabal2nix "doctest-parallel" sources.doctest-parallel {};
         clash-prelude =
-          pkgs.haskell.lib.dontCheck (self.callCabal2nix "clash-prelude" sources.clash-prelude {});
+          self.callCabal2nix "clash-prelude" (sources.clash-compiler + "/clash-prelude") {};
         clash-lib =
-          pkgs.haskell.lib.dontCheck (self.callCabal2nix "clash-lib" sources.clash-lib {});
+          self.callCabal2nix "clash-lib" (sources.clash-compiler + "/clash-lib") {};
         clash-ghc =
-          pkgs.haskell.lib.dontCheck (self.callCabal2nix "clash-ghc" sources.clash-ghc {});
+          self.callCabal2nix "clash-ghc" (sources.clash-compiler + "/clash-ghc") {};
+        tasty-hedgehog =
+          self.callCabal2nix "tasty-hedgehog" sources.tasty-hedgehog {};
+        hedgehog =
+          self.callCabal2nix "hedgehog" (sources.haskell-hedgehog + "/hedgehog") {};
       };
     };
   };

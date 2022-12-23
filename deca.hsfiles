@@ -310,17 +310,15 @@ in [src/](#src).
 
 ```yaml
 test-suite doctests
-  import:           common-options
   type:             exitcode-stdio-1.0
   default-language: Haskell2010
   main-is:          doctests.hs
+  ghc-options:      -Wall -Wcompat -threaded
   hs-source-dirs:   tests
-
   build-depends:
     base,
-    {{name}},
-    process,
-    doctest >= 0.16.1 && < 0.20
+    {{ name }},
+    doctest-parallel >= 0.2 && < 0.4,
 ```
 
 Last but not least, another testsuite stanza is defined:
@@ -450,13 +448,6 @@ All 1 tests passed (0.00s)
 # Change the license
 By default `{{name}}.cabal` sets its `license` field to `BSD-2-Clause`. You
 might want to change this.
-
-{-# START_FILE Setup.hs #-}
-import Prelude
-import Distribution.Extra.Doctest (defaultMainWithDoctests)
-
-main :: IO ()
-main = defaultMainWithDoctests "doctests"
 
 {-# START_FILE bin/Clash.hs #-}
 
@@ -756,24 +747,12 @@ main = defaultMain tests
 {-# START_FILE tests/doctests.hs #-}
 module Main where
 
-import Prelude
-import Build_doctests (flags, pkgs, module_sources)
-import Test.DocTest (doctest)
-import System.Environment (lookupEnv)
-import System.Process
-
-getGlobalPackageDb :: IO String
-getGlobalPackageDb = readProcess "ghc" ["--print-global-package-db"] ""
+import System.Environment (getArgs)
+import Test.DocTest (mainFromCabal)
 
 main :: IO ()
-main = do
-  inNixShell <-lookupEnv "IN_NIX_SHELL"
-  extraFlags <-
-    case inNixShell of
-      Nothing -> pure []
-      Just _ -> pure . ("-package-db="++) <$> getGlobalPackageDb
+main = mainFromCabal "{{ name }}" =<< getArgs
 
-  doctest (flags ++ extraFlags ++ pkgs ++ module_sources)
 
 {-# START_FILE tests/unittests.hs #-}
 import Prelude
@@ -867,13 +846,6 @@ common common-options
     ghc-typelits-extra,
     ghc-typelits-knownnat
 
-
-custom-setup
-  setup-depends:
-    base          >= 4.11 && <5,
-    Cabal         >= 2.4,
-    cabal-doctest >= 1.0.1 && <1.1
-
 library
   import: common-options
   hs-source-dirs: src
@@ -898,17 +870,15 @@ executable clashi
   build-depends: base, clash-ghc, {{name}}
 
 test-suite doctests
-  import:           common-options
   type:             exitcode-stdio-1.0
   default-language: Haskell2010
   main-is:          doctests.hs
+  ghc-options:      -Wall -Wcompat -threaded
   hs-source-dirs:   tests
-
   build-depends:
     base,
-    {{name}},
-    process,
-    doctest >= 0.16.1 && < 0.20
+    {{ name }},
+    doctest-parallel >= 0.2 && < 0.4,
 
 test-suite test-library
   import: common-options

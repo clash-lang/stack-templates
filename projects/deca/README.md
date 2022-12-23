@@ -240,17 +240,15 @@ in [src/](#src).
 
 ```yaml
 test-suite doctests
-  import:           common-options
   type:             exitcode-stdio-1.0
   default-language: Haskell2010
   main-is:          doctests.hs
+  ghc-options:      -Wall -Wcompat -threaded
   hs-source-dirs:   tests
-
   build-depends:
     base,
-    {{name}},
-    process,
-    doctest >= 0.16.1 && < 0.20
+    {{ name }},
+    doctest-parallel >= 0.2 && < 0.4,
 ```
 
 Last but not least, another testsuite stanza is defined:
