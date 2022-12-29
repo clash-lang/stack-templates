@@ -100,6 +100,46 @@ jobs:
         run: |
           .ci/test_projects_cabal.sh
 
+
+  hls:
+    name: HLS
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        tools:
+          - {ghc: "9.0.2", cabal: "3.8.1.0", hls: "1.9.0.0", ghcup: "0.1.18.0"}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Haskell
+        run: |
+          sudo apt-get update
+          sudo apt-get install curl -y
+          sudo apt-get install \
+            build-essential curl libffi-dev libffi8ubuntu1 libgmp-dev \
+            libgmp10 libncurses-dev libncurses5 libtinfo5 -y
+          sudo curl "https://downloads.haskell.org/~ghcup/${{ matrix.tools.ghcup }}/x86_64-linux-ghcup-${{ matrix.tools.ghcup }}" --output /usr/bin/ghcup
+          sudo chmod +x /usr/bin/ghcup
+          ghcup install ghc ${{ matrix.tools.ghc }} --set --force
+          ghcup install cabal ${{ matrix.tools.cabal }} --set --force
+          ghcup install hls ${{ matrix.tools.hls }} --set --force
+          cabal update
+          echo "${HOME}/.ghcup/bin/" >> $GITHUB_PATH
+          ls "${HOME}/.ghcup/bin/"
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: $HOME/.cabal/store
+          key: ${{ runner.os }}-cachebust1-hls-${{ matrix.tools.ghc }}-${{ matrix.tools.cabal }}-${{ matrix.tools.hls }}-${{ matrix.tools.ghcup }}-${{ hashFiles('**/*.cabal', '**/stack.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-cachebust1-hls-${{ matrix.tools.ghc }}-${{ matrix.tools.cabal }}-${{ matrix.tools.hls }}-${{ matrix.tools.ghcup }}-${{ hashFiles('**/*.cabal', '**/stack.yaml') }}
+            ${{ runner.os }}-cachebust1-hls-${{ matrix.tools.ghc }}-${{ matrix.tools.cabal }}-${{ matrix.tools.hls }}-${{ matrix.tools.ghcup }}-
+      - name: Test
+        run: |
+          .ci/test_projects_hls.sh
+
   # Nix
   nix:
     name: Nix
@@ -126,6 +166,7 @@ jobs:
       - nix
       - render
       - stack
+      - hls
     runs-on: ubuntu-22.04
     steps:
       - run: echo OK

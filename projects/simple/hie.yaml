@@ -1,0 +1,12 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:{{ name }}"
+    - path: "./tests/doctests.hs"
+      component: "{{ name }}:doctests"
+    - path: "./tests"
+      component: "{{ name }}:test-library"
+    - path: "./bin/Clashi.hs"
+      component: "{{ name }}:exe:clashi"
+    - path: "./bin/Clash.hs"
+      component: "{{ name }}:exe:clash"
