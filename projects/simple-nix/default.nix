@@ -13,7 +13,6 @@ in haskell.lib.overrideCabal hs-build (drv: {
   postBuild = ''
     dist/build/clash/clash \
       ${topModule} --${hdl} \
-      -package-db $TMPDIR/package.conf.d \
       -package-db dist/package.conf.inplace
   '';
 
