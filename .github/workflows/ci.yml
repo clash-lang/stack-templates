@@ -105,6 +105,9 @@ jobs:
     name: Nix
     runs-on: ubuntu-latest
 
+    env:
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
@@ -114,9 +117,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Enable cachix
+        run: |
+          nix-env -iA cachix -f https://cachix.org/api/v1/install
+          cachix use clash-lang
+
       - name: Test
         run: |
           .ci/test_projects_nix.sh
+
+      - name: Push to cachix
+        if: github.ref == 'refs/heads/master'
+        run: |
+          .ci/publish_nix.sh
 
   # Collector job, used to match on in GitHub UI
   all:
