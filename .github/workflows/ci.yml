@@ -131,7 +131,7 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
-          path: $HOME/.cabal/store
+          path: ~/.cabal/store
           key: ${{ runner.os }}-cachebust1-hls-${{ matrix.tools.ghc }}-${{ matrix.tools.cabal }}-${{ matrix.tools.hls }}-${{ matrix.tools.ghcup }}-${{ hashFiles('**/*.cabal', '**/stack.yaml') }}
           restore-keys: |
             ${{ runner.os }}-cachebust1-hls-${{ matrix.tools.ghc }}-${{ matrix.tools.cabal }}-${{ matrix.tools.hls }}-${{ matrix.tools.ghcup }}-${{ hashFiles('**/*.cabal', '**/stack.yaml') }}
