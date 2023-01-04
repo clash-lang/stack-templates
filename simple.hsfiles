@@ -419,6 +419,20 @@ tests: true
 package recursion-schemes
     optimization: 0
 
+{-# START_FILE hie.yaml #-}
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:{{ name }}"
+    - path: "./tests/doctests.hs"
+      component: "{{ name }}:doctests"
+    - path: "./tests"
+      component: "{{ name }}:test-library"
+    - path: "./bin/Clashi.hs"
+      component: "{{ name }}:exe:clashi"
+    - path: "./bin/Clash.hs"
+      component: "{{ name }}:exe:clash"
+
 {-# START_FILE src/Example/Project.hs #-}
 module Example.Project (topEntity, plus) where
 
