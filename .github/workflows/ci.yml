@@ -145,9 +145,6 @@ jobs:
     name: Nix
     runs-on: ubuntu-latest
 
-    env:
-      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-
     steps:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v18
@@ -165,11 +162,6 @@ jobs:
       - name: Test
         run: |
           .ci/test_projects_nix.sh
-
-      - name: Push to cachix
-        if: github.ref == 'refs/heads/master'
-        run: |
-          .ci/publish_nix.sh
 
   # Collector job, used to match on in GitHub UI
   all:
@@ -207,3 +199,34 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git ssh zip gzip tar coreutils haskell-stack
           .ci/publish.sh
+
+  # Push to Cachix
+  publish-nix:
+    name: Publish Nix
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - all
+    runs-on: ubuntu-22.04
+    environment: master
+
+    env:
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v18
+        with:
+          nix_path: nixpkgs=channel:nixos-22.05
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Enable cachix
+        run: |
+          nix-env -iA cachix -f https://cachix.org/api/v1/install
+          cachix use clash-lang
+
+      - name: Push to cachix
+        if: github.ref == 'refs/heads/master'
+        run: |
+          .ci/publish_nix.sh
