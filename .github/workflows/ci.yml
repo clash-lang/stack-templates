@@ -107,7 +107,7 @@ jobs:
     strategy:
       matrix:
         tools:
-          - {ghc: "9.0.2", cabal: "3.8.1.0", hls: "1.9.0.0", ghcup: "0.1.18.0"}
+          - {ghc: "9.4.7", cabal: "3.8.1.0", hls: "2.4.0.0", ghcup: "0.1.20.0"}
       fail-fast: false
     steps:
       - name: Checkout

@@ -106,12 +106,6 @@ write-ghc-environment-files: always
 -- Eliminates the need for `--enable-tests`, which is needed for HLS.
 tests: true
 
--- Works around: https://github.com/recursion-schemes/recursion-schemes/issues/128. This
--- shouldn't harm (runtime) performance of Clash, as we only use recursion-schemes with
--- TemplateHaskell.
-package recursion-schemes
-    optimization: 0
-
 {-# START_FILE default.nix #-}
 { nixpkgs ? import ./nix/nixpkgs.nix {} }:
 
@@ -186,17 +180,17 @@ in import sources.nixpkgs { overlays = [ overlay ]; }
 {-# START_FILE nix/sources.json #-}
 {
     "clash-compiler": {
-        "branch": "1.6",
+        "branch": "1.8",
         "description": "Haskell to VHDL/Verilog/SystemVerilog compiler",
         "homepage": "https://clash-lang.org/",
         "owner": "clash-lang",
         "repo": "clash-compiler",
-        "rev": "611df52fab184d2f7b7aa768df45e788b13889f2",
-        "sha256": "1f19w01ljl4psbfv5y5mpij97bnsa7s97ljjcwrsadr3jhlvmc2d",
+        "rev": "3f5dc67c0e526e43a4dd88eb3902e39ed512c166",
+        "sha256": "022rwif8xkaabw0j3arhyj0hswmh3vq2nx1bbz8rbkp05jm4psgg",
         "type": "tarball",
-        "url": "https://github.com/clash-lang/clash-compiler/archive/611df52fab184d2f7b7aa768df45e788b13889f2.tar.gz",
+        "url": "https://github.com/clash-lang/clash-compiler/archive/3f5dc67c0e526e43a4dd88eb3902e39ed512c166.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
-        "version": "1.6.4"
+        "version": "1.8.1"
     },
     "doctest-parallel": {
         "branch": "main",
@@ -204,12 +198,12 @@ in import sources.nixpkgs { overlays = [ overlay ]; }
         "homepage": null,
         "owner": "martijnbastiaan",
         "repo": "doctest-parallel",
-        "rev": "112b85b55c63dae1cc52b5216efe03873f1acc06",
-        "sha256": "1v18an5np0wflg6phycmmhqmcpmn30p0vxaq2wx8ha5af8ckmymb",
+        "rev": "d73df0a2fd58b0b6aba438eb40aa56d30724e42a",
+        "sha256": "1k88bkwz2crvb6dafcf6y5y6wm0m2qvds57f3b0rx4id7la4qv89",
         "type": "tarball",
-        "url": "https://github.com/martijnbastiaan/doctest-parallel/archive/112b85b55c63dae1cc52b5216efe03873f1acc06.tar.gz",
+        "url": "https://github.com/martijnbastiaan/doctest-parallel/archive/d73df0a2fd58b0b6aba438eb40aa56d30724e42a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
-        "version": "0.2.6"
+        "version": "0.3.1"
     },
     "gitignore": {
         "branch": "master",
@@ -229,12 +223,12 @@ in import sources.nixpkgs { overlays = [ overlay ]; }
         "homepage": "",
         "owner": "hedgehogqa",
         "repo": "haskell-hedgehog",
-        "rev": "a5b482493733dbdd50482c6e65f0ee8f2e156293",
-        "sha256": "1ar2nsbsk7490lpc66zaxsqrh0pkgczh26dkkyby78a2svvmx3gx",
+        "rev": "52c35cabe24de2a1c03e72dde9d04b64f81d1f44",
+        "sha256": "1f9znljkmrdd4nlfmjfi8kx0fgcysp328rz27099n7bygchpgjr6",
         "type": "tarball",
-        "url": "https://github.com/hedgehogqa/haskell-hedgehog/archive/a5b482493733dbdd50482c6e65f0ee8f2e156293.tar.gz",
+        "url": "https://github.com/hedgehogqa/haskell-hedgehog/archive/52c35cabe24de2a1c03e72dde9d04b64f81d1f44.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
-        "version": "1.2"
+        "version": "1.4"
     },
     "niv": {
         "branch": "master",
@@ -242,10 +236,10 @@ in import sources.nixpkgs { overlays = [ overlay ]; }
         "homepage": "https://github.com/nmattia/niv",
         "owner": "nmattia",
         "repo": "niv",
-        "rev": "df49d53b71ad5b6b5847b32e5254924d60703c46",
-        "sha256": "1j5p8mi1wi3pdcq0lfb881p97i232si07nb605dl92cjwnira88c",
+        "rev": "723f0eeb969a730db3c30f977c2b66b9dce9fe4a",
+        "sha256": "0016l7230gd2kdh0g2w573r9a2krqb7x4ifcjhhsn4h1bwap7qr0",
         "type": "tarball",
-        "url": "https://github.com/nmattia/niv/archive/df49d53b71ad5b6b5847b32e5254924d60703c46.tar.gz",
+        "url": "https://github.com/nmattia/niv/archive/723f0eeb969a730db3c30f977c2b66b9dce9fe4a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -254,10 +248,10 @@ in import sources.nixpkgs { overlays = [ overlay ]; }
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "c86185d20d708013caf97a6adaa8dc6d72313c75",
-        "sha256": "1n0jzxipdvvcxzwnbadf5yyzrzsg0ikf1n82zyqr8z981b3mbf32",
+        "rev": "eabc38219184cc3e04a974fe31857d8e0eac098d",
+        "sha256": "04ffwp2gzq0hhz7siskw6qh9ys8ragp7285vi1zh8xjksxn1msc5",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/c86185d20d708013caf97a6adaa8dc6d72313c75.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/eabc38219184cc3e04a974fe31857d8e0eac098d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "tasty-hedgehog": {
@@ -266,12 +260,12 @@ in import sources.nixpkgs { overlays = [ overlay ]; }
         "homepage": "",
         "owner": "qfpl",
         "repo": "tasty-hedgehog",
-        "rev": "1ade0d8e78c32a724f80d4bc39bdb2a55c5de1c6",
-        "sha256": "00p60dhj2b8jqnv7hkk6ghshmabkhjalxvncz6dfs0wkr19rqr3l",
+        "rev": "ed07ecef3f6a01572b577b450ba6d58108173125",
+        "sha256": "1b8y5ibg1ihgf44nyym4g45lwmabymfcjb2nigv93s2fmng9zp6r",
         "type": "tarball",
-        "url": "https://github.com/qfpl/tasty-hedgehog/archive/1ade0d8e78c32a724f80d4bc39bdb2a55c5de1c6.tar.gz",
+        "url": "https://github.com/qfpl/tasty-hedgehog/archive/ed07ecef3f6a01572b577b450ba6d58108173125.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
-        "version": "1.4.0.0"
+        "version": "1.4.0.2"
     }
 }
 
@@ -288,33 +282,34 @@ let
     let
       name' = sanitizeName name + "-src";
     in
-      if spec.builtin or true then
-        builtins_fetchurl { inherit (spec) url sha256; name = name'; }
-      else
-        pkgs.fetchurl { inherit (spec) url sha256; name = name'; };
+    if spec.builtin or true then
+      builtins_fetchurl { inherit (spec) url sha256; name = name'; }
+    else
+      pkgs.fetchurl { inherit (spec) url sha256; name = name'; };
 
   fetch_tarball = pkgs: name: spec:
     let
       name' = sanitizeName name + "-src";
     in
-      if spec.builtin or true then
-        builtins_fetchTarball { name = name'; inherit (spec) url sha256; }
-      else
-        pkgs.fetchzip { name = name'; inherit (spec) url sha256; };
+    if spec.builtin or true then
+      builtins_fetchTarball { name = name'; inherit (spec) url sha256; }
+    else
+      pkgs.fetchzip { name = name'; inherit (spec) url sha256; };
 
   fetch_git = name: spec:
     let
       ref =
-        if spec ? ref then spec.ref else
+        spec.ref or (
           if spec ? branch then "refs/heads/${spec.branch}" else
-            if spec ? tag then "refs/tags/${spec.tag}" else
-              abort "In git source '${name}': Please specify `ref`, `tag` or `branch`!";
-      submodules = if spec ? submodules then spec.submodules else false;
+          if spec ? tag then "refs/tags/${spec.tag}" else
+          abort "In git source '${name}': Please specify `ref`, `tag` or `branch`!"
+        );
+      submodules = spec.submodules or false;
       submoduleArg =
         let
           nixSupportsSubmodules = builtins.compareVersions builtins.nixVersion "2.4" >= 0;
           emptyArgWithWarning =
-            if submodules == true
+            if submodules
             then
               builtins.trace
                 (
@@ -322,15 +317,15 @@ let
                   + "but your nix's (${builtins.nixVersion}) builtins.fetchGit "
                   + "does not support them"
                 )
-                {}
-            else {};
+                { }
+            else { };
         in
-          if nixSupportsSubmodules
-          then { inherit submodules; }
-          else emptyArgWithWarning;
+        if nixSupportsSubmodules
+        then { inherit submodules; }
+        else emptyArgWithWarning;
     in
-      builtins.fetchGit
-        ({ url = spec.repo; inherit (spec) rev; inherit ref; } // submoduleArg);
+    builtins.fetchGit
+      ({ url = spec.repo; inherit (spec) rev; inherit ref; } // submoduleArg);
 
   fetch_local = spec: spec.path;
 
@@ -364,16 +359,16 @@ let
       hasNixpkgsPath = builtins.any (x: x.prefix == "nixpkgs") builtins.nixPath;
       hasThisAsNixpkgsPath = <nixpkgs> == ./.;
     in
-      if builtins.hasAttr "nixpkgs" sources
-      then sourcesNixpkgs
-      else if hasNixpkgsPath && ! hasThisAsNixpkgsPath then
-        import <nixpkgs> {}
-      else
-        abort
-          ''
-            Please specify either <nixpkgs> (through -I or NIX_PATH=nixpkgs=...) or
-            add a package called "nixpkgs" to your sources.json.
-          '';
+    if builtins.hasAttr "nixpkgs" sources
+    then sourcesNixpkgs
+    else if hasNixpkgsPath && ! hasThisAsNixpkgsPath then
+      import <nixpkgs> { }
+    else
+      abort
+        ''
+          Please specify either <nixpkgs> (through -I or NIX_PATH=nixpkgs=...) or
+          add a package called "nixpkgs" to your sources.json.
+        '';
 
   # The actual fetching function.
   fetch = pkgs: name: spec:
@@ -393,13 +388,13 @@ let
   # the path directly as opposed to the fetched source.
   replace = name: drv:
     let
-      saneName = stringAsChars (c: if isNull (builtins.match "[a-zA-Z0-9]" c) then "_" else c) name;
+      saneName = stringAsChars (c: if (builtins.match "[a-zA-Z0-9]" c) == null then "_" else c) name;
       ersatz = builtins.getEnv "NIV_OVERRIDE_${saneName}";
     in
-      if ersatz == "" then drv else
-        # this turns the string into an actual Nix path (for both absolute and
-        # relative paths)
-        if builtins.substring 0 1 ersatz == "/" then /. + ersatz else /. + builtins.getEnv "PWD" + "/${ersatz}";
+    if ersatz == "" then drv else
+      # this turns the string into an actual Nix path (for both absolute and
+      # relative paths)
+    if builtins.substring 0 1 ersatz == "/" then /. + ersatz else /. + builtins.getEnv "PWD" + "/${ersatz}";
 
   # Ports of functions for older nix versions
 
@@ -410,7 +405,7 @@ let
   );
 
   # https://github.com/NixOS/nixpkgs/blob/0258808f5744ca980b9a1f24fe0b1e6f0fecee9c/lib/lists.nix#L295
-  range = first: last: if first > last then [] else builtins.genList (n: first + n) (last - first + 1);
+  range = first: last: if first > last then [ ] else builtins.genList (n: first + n) (last - first + 1);
 
   # https://github.com/NixOS/nixpkgs/blob/0258808f5744ca980b9a1f24fe0b1e6f0fecee9c/lib/strings.nix#L257
   stringToCharacters = s: map (p: builtins.substring p 1 s) (range 0 (builtins.stringLength s - 1));
@@ -421,43 +416,46 @@ let
   concatStrings = builtins.concatStringsSep "";
 
   # https://github.com/NixOS/nixpkgs/blob/8a9f58a375c401b96da862d969f66429def1d118/lib/attrsets.nix#L331
-  optionalAttrs = cond: as: if cond then as else {};
+  optionalAttrs = cond: as: if cond then as else { };
 
   # fetchTarball version that is compatible between all the versions of Nix
   builtins_fetchTarball = { url, name ? null, sha256 }@attrs:
     let
       inherit (builtins) lessThan nixVersion fetchTarball;
     in
-      if lessThan nixVersion "1.12" then
-        fetchTarball ({ inherit url; } // (optionalAttrs (!isNull name) { inherit name; }))
-      else
-        fetchTarball attrs;
+    if lessThan nixVersion "1.12" then
+      fetchTarball ({ inherit url; } // (optionalAttrs (name != null) { inherit name; }))
+    else
+      fetchTarball attrs;
 
   # fetchurl version that is compatible between all the versions of Nix
   builtins_fetchurl = { url, name ? null, sha256 }@attrs:
     let
       inherit (builtins) lessThan nixVersion fetchurl;
     in
-      if lessThan nixVersion "1.12" then
-        fetchurl ({ inherit url; } // (optionalAttrs (!isNull name) { inherit name; }))
-      else
-        fetchurl attrs;
+    if lessThan nixVersion "1.12" then
+      fetchurl ({ inherit url; } // (optionalAttrs (name != null) { inherit name; }))
+    else
+      fetchurl attrs;
 
   # Create the final "sources" from the config
   mkSources = config:
-    mapAttrs (
-      name: spec:
-        if builtins.hasAttr "outPath" spec
-        then abort
-          "The values in sources.json should not have an 'outPath' attribute"
-        else
-          spec // { outPath = replace name (fetch config.pkgs name spec); }
-    ) config.sources;
+    mapAttrs
+      (
+        name: spec:
+          if builtins.hasAttr "outPath" spec
+          then
+            abort
+              "The values in sources.json should not have an 'outPath' attribute"
+          else
+            spec // { outPath = replace name (fetch config.pkgs name spec); }
+      )
+      config.sources;
 
   # The "config" used by the fetchers
   mkConfig =
     { sourcesFile ? if builtins.pathExists ./sources.json then ./sources.json else null
-    , sources ? if isNull sourcesFile then {} else builtins.fromJSON (builtins.readFile sourcesFile)
+    , sources ? if sourcesFile == null then { } else builtins.fromJSON (builtins.readFile sourcesFile)
     , system ? builtins.currentSystem
     , pkgs ? mkPkgs sources system
     }: rec {
@@ -469,7 +467,7 @@ let
     };
 
 in
-mkSources (mkConfig {}) // { __functor = _: settings: mkSources (mkConfig settings); }
+mkSources (mkConfig { }) // { __functor = _: settings: mkSources (mkConfig settings); }
 
 {-# START_FILE release.nix #-}
 let
@@ -515,7 +513,14 @@ topEntity :: Signed 8 -> Signed 8 -> Signed 8
 topEntity = plus
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-19.32
+resolver: lts-21.20
+
+extra-deps:
+- clash-ghc-1.8.1@sha256:3bab304fa5584f3541650bddd01160f2710b9ced52e52c06481a91ac73d71bb8,9753
+- clash-lib-1.8.1@sha256:17d78e786dedf16a76394cd5813372870a3d70a1a4c7f964309f126b800e90f6,15693
+- clash-prelude-1.8.1@sha256:c3fbb9f6b8e74140fb3d5c4d59ec84cfe4a53e9f8520e606c187cfc04b149065,17626
+- concurrent-supply-0.1.8@sha256:80b658533141660818d0781b8c8fb9a8cf69b987fcfbab782dc788bfc7df4846,1627
+- prettyprinter-interp-0.2.0.0@sha256:69c339a95b265dab9b3478ca19ec96952b6b472bd0ff6e2127112a9562362c1d,2086
 
 {-# START_FILE tests/Tests/Example/Project.hs #-}
 module Tests.Example.Project where
@@ -642,7 +647,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.6.4 && < 1.8,
+    clash-prelude >= 1.8.1 && < 1.10,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
