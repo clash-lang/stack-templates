@@ -657,12 +657,15 @@ common common-options
     DeriveLift
     DeriveTraversable
     DerivingStrategies
+    FlexibleContexts
     InstanceSigs
     KindSignatures
     LambdaCase
+    NamedFieldPuns
     NoStarIsType
     PolyKinds
     RankNTypes
+    RecordWildCards
     ScopedTypeVariables
     StandaloneDeriving
     TupleSections
