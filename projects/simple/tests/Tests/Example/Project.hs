@@ -1,26 +1,39 @@
 module Tests.Example.Project where
 
-import Prelude
+import Clash.Prelude
+import Clash.Prelude.Testbench
 
 import Test.Tasty
 import Test.Tasty.TH
 import Test.Tasty.Hedgehog
+import Clash.Hedgehog.Sized.Unsigned
+import Clash.Hedgehog.Sized.Vector
 
-import Hedgehog ((===))
-import qualified Hedgehog as H
-import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog as HH
 import qualified Hedgehog.Range as Range
 
-import Example.Project (plus)
+-- Import the module containing the `accum` function
+import Examples.Accum (accum)
 
-prop_plusIsCommutative :: H.Property
-prop_plusIsCommutative = H.property $ do
-  a <- H.forAll (Gen.integral (Range.linear minBound maxBound))
-  b <- H.forAll (Gen.integral (Range.linear minBound maxBound))
-  plus a b === plus b a
+-- Define a Hedgehog property to test the `accum` function
+prop_accum :: HH.Property
+prop_accum = HH.property $ do
+  -- Generate vector of random unsigned numbers of at least length 1.
+  someVec <- HH.forAll $ genSomeVec @_ @1 (Range.linear 0 100)
+    (genUnsigned Range.linearBounded)
+  -- Check if the output matches the expected result
+  case someVec of
+    SomeVec SNat vec -> do
+      let
+        tb :: HiddenClockResetEnable System => Signal System Bool
+        tb = outputVerifier' expected actual
+         where
+          expected = scanl (\acc x -> acc + fromIntegral x) 0 vec
+          actual = accum @System (stimuliGenerator vec)
+      HH.assert $ or $ withClockResetEnable clockGen resetGen enableGen tb
 
-tests :: TestTree
-tests = $(testGroupGenerator)
+accumTests :: TestTree
+accumTests = $(testGroupGenerator)
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMain accumTests
