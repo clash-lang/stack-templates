@@ -428,25 +428,58 @@ cradle:
       component: "{{ name }}:exe:clash"
 
 {-# START_FILE src/Example/Project.hs #-}
-module Example.Project (topEntity, plus) where
+-- @createDomain@ below generates a warning about orphan instances, but we like
+-- our code to be warning-free.
+{-# OPTIONS_GHC -Wno-orphans #-}
+
+module Example.Project where
 
 import Clash.Prelude
 
--- | Add two numbers. Example:
---
--- >>> plus 3 5
--- 8
-plus :: Signed 8 -> Signed 8 -> Signed 8
-plus a b = a + b
+-- Create a domain with the frequency of your input clock. For this example we used
+-- 50 MHz.
+createDomain vSystem{vName="MyDomain", vPeriod=hzToPeriod 50e6}
 
--- | 'topEntity' is Clash's equivalent of 'main' in other programming
--- languages. Clash will look for it when compiling 'Example.Project'
--- and translate it to HDL. While polymorphism can be used freely in
--- Clash projects, a 'topEntity' must be monomorphic and must use non-
--- recursive types. Or, to put it hand-wavily, a 'topEntity' must be
--- translatable to a static number of wires.
-topEntity :: Signed 8 -> Signed 8 -> Signed 8
-topEntity = plus
+-- | 'topEntity' is Clash's equivalent of 'main' in other programming languages.
+-- Clash will look for it when compiling 'Example.Project' and translate it to
+-- HDL. While polymorphism can be used freely in Clash projects, a 'topEntity'
+-- must be monomorphic and must use non- recursive types. Or, to put it
+-- hand-wavily, a 'topEntity' must be translatable to a static number of wires.
+--
+-- The inputs need to be declared as parameters in order to be able to give them
+-- custom names. In other words, @topEntity = exposeClockResetEnable acc@ would
+-- prevent naming the inputs.
+topEntity ::
+  Clock MyDomain ->
+  Reset MyDomain ->
+  Enable MyDomain ->
+  Signal MyDomain (Unsigned 8) ->
+  Signal MyDomain (Unsigned 8)
+topEntity clk rst en inp = (exposeClockResetEnable accum) clk rst en inp
+-- Give names to the top entity parts
+{-# ANN topEntity
+  (Synthesize
+    { t_name = "accum"
+    , t_inputs = [ PortName "CLK"
+                 , PortName "RST"
+                 , PortName "EN"
+                 , PortName "DIN"
+                 ]
+    , t_output = PortName "DOUT"
+    }) #-}
+
+-- | A simple accumulator: it accumulates the inputs, resets to 0, and outputs
+-- the current state
+accum ::
+  forall dom .
+  HiddenClockResetEnable dom =>
+  Signal dom (Unsigned 8) ->
+  Signal dom (Unsigned 8)
+accum inp = mux (fmap (== maxBound) count) 0 $ mealy accumT 0 inp
+ where
+  count :: Signal dom (Index 5)
+  count = register 0 $ satSucc SatBound <$> count
+  accumT s i = (s + i, s)
 
 {-# START_FILE stack.yaml #-}
 resolver: lts-21.20
@@ -455,36 +488,50 @@ extra-deps:
 - clash-ghc-1.8.1@sha256:3bab304fa5584f3541650bddd01160f2710b9ced52e52c06481a91ac73d71bb8,9753
 - clash-lib-1.8.1@sha256:17d78e786dedf16a76394cd5813372870a3d70a1a4c7f964309f126b800e90f6,15693
 - clash-prelude-1.8.1@sha256:c3fbb9f6b8e74140fb3d5c4d59ec84cfe4a53e9f8520e606c187cfc04b149065,17626
+- clash-prelude-hedgehog-1.8.1@sha256:9ec3aa3f8195481f5ce4942b34a49c97dd132dd1c8f1fa58aeecbd82c2602e86,1410
 - concurrent-supply-0.1.8@sha256:80b658533141660818d0781b8c8fb9a8cf69b987fcfbab782dc788bfc7df4846,1627
 - prettyprinter-interp-0.2.0.0@sha256:69c339a95b265dab9b3478ca19ec96952b6b472bd0ff6e2127112a9562362c1d,2086
 
 {-# START_FILE tests/Tests/Example/Project.hs #-}
 module Tests.Example.Project where
 
-import Prelude
+import Clash.Prelude
+import Clash.Prelude.Testbench
 
 import Test.Tasty
 import Test.Tasty.TH
 import Test.Tasty.Hedgehog
+import Clash.Hedgehog.Sized.Unsigned
+import Clash.Hedgehog.Sized.Vector
 
-import Hedgehog ((===))
-import qualified Hedgehog as H
-import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog as HH
 import qualified Hedgehog.Range as Range
 
-import Example.Project (plus)
+-- Import the module containing the `accum` function
+import Example.Project (accum)
 
-prop_plusIsCommutative :: H.Property
-prop_plusIsCommutative = H.property $ do
-  a <- H.forAll (Gen.integral (Range.linear minBound maxBound))
-  b <- H.forAll (Gen.integral (Range.linear minBound maxBound))
-  plus a b === plus b a
+-- Define a Hedgehog property to test the `accum` function
+prop_accum :: HH.Property
+prop_accum = HH.property $ do
+  -- Generate vector of random unsigned numbers of at least length 1.
+  someVec <- HH.forAll $ genSomeVec @_ @1 (Range.linear 0 100)
+    (genUnsigned Range.linearBounded)
+  -- Check if the output matches the expected result
+  case someVec of
+    SomeVec SNat vec -> do
+      let
+        tb :: HiddenClockResetEnable System => Signal System Bool
+        tb = outputVerifier' expected actual
+         where
+          expected = scanl (\acc x -> acc + fromIntegral x) 0 vec
+          actual = accum @System (stimuliGenerator vec)
+      HH.assert $ or $ withClockResetEnable clockGen resetGen enableGen tb
 
-tests :: TestTree
-tests = $(testGroupGenerator)
+accumTests :: TestTree
+accumTests = $(testGroupGenerator)
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMain accumTests
 
 {-# START_FILE tests/doctests.hs #-}
 module Main where
@@ -505,7 +552,7 @@ import qualified Tests.Example.Project
 
 main :: IO ()
 main = defaultMain $ testGroup "."
-  [ Tests.Example.Project.tests
+  [ Tests.Example.Project.accumTests
   ]
 
 {-# START_FILE {{name}}.cabal #-}
@@ -531,12 +578,15 @@ common common-options
     DeriveLift
     DeriveTraversable
     DerivingStrategies
+    FlexibleContexts
     InstanceSigs
     KindSignatures
     LambdaCase
+    NamedFieldPuns
     NoStarIsType
     PolyKinds
     RankNTypes
+    RecordWildCards
     ScopedTypeVariables
     StandaloneDeriving
     TupleSections
@@ -638,5 +688,6 @@ test-suite test-library
     hedgehog,
     tasty >= 1.2 && < 1.5,
     tasty-hedgehog,
-    tasty-th
+    tasty-th,
+    clash-prelude-hedgehog
 

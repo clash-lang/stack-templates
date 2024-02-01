@@ -13,7 +13,7 @@ import qualified Hedgehog as HH
 import qualified Hedgehog.Range as Range
 
 -- Import the module containing the `accum` function
-import Examples.Accum (accum)
+import Example.Project (accum)
 
 -- Define a Hedgehog property to test the `accum` function
 prop_accum :: HH.Property

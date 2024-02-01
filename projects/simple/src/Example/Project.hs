@@ -41,9 +41,12 @@ topEntity clk rst en inp = (exposeClockResetEnable accum) clk rst en inp
 -- | A simple accumulator: it accumulates the inputs, resets to 0, and outputs
 -- the current state
 accum ::
+  forall dom .
   HiddenClockResetEnable dom =>
   Signal dom (Unsigned 8) ->
   Signal dom (Unsigned 8)
-accum = mealy accumT 0
+accum inp = mux (fmap (== maxBound) count) 0 $ mealy accumT 0 inp
  where
+  count :: Signal dom (Index 5)
+  count = register 0 $ satSucc SatBound <$> count
   accumT s i = (s + i, s)
