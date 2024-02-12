@@ -20,12 +20,15 @@ common common-options
     DeriveLift
     DeriveTraversable
     DerivingStrategies
+    FlexibleContexts
     InstanceSigs
     KindSignatures
     LambdaCase
+    NamedFieldPuns
     NoStarIsType
     PolyKinds
     RankNTypes
+    RecordWildCards
     ScopedTypeVariables
     StandaloneDeriving
     TupleSections
@@ -124,6 +127,7 @@ test-suite test-library
   build-depends:
     {{name}},
     QuickCheck,
+    clash-prelude-hedgehog,
     hedgehog,
     tasty >= 1.2 && < 1.5,
     tasty-hedgehog,

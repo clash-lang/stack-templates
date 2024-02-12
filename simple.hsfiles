@@ -222,7 +222,7 @@ Note that this whole section is a `common` "stanza". We'll use it as a template 
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.6.4 && < 1.8,
+    clash-prelude >= 1.8.1 && < 1.10,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -428,25 +428,60 @@ cradle:
       component: "{{ name }}:exe:clash"
 
 {-# START_FILE src/Example/Project.hs #-}
-module Example.Project (topEntity, plus) where
+-- @createDomain@ below generates a warning about orphan instances, but we like
+-- our code to be warning-free.
+{-# OPTIONS_GHC -Wno-orphans #-}
+
+module Example.Project where
 
 import Clash.Prelude
 
--- | Add two numbers. Example:
---
--- >>> plus 3 5
--- 8
-plus :: Signed 8 -> Signed 8 -> Signed 8
-plus a b = a + b
+-- Create a domain with the frequency of your input clock. For this example we used
+-- 50 MHz.
+createDomain vSystem{vName="Dom50", vPeriod=hzToPeriod 50e6}
 
--- | 'topEntity' is Clash's equivalent of 'main' in other programming
--- languages. Clash will look for it when compiling 'Example.Project'
--- and translate it to HDL. While polymorphism can be used freely in
--- Clash projects, a 'topEntity' must be monomorphic and must use non-
--- recursive types. Or, to put it hand-wavily, a 'topEntity' must be
--- translatable to a static number of wires.
-topEntity :: Signed 8 -> Signed 8 -> Signed 8
-topEntity = plus
+-- | @topEntity@ is Clash@s equivalent of @main@ in other programming languages.
+-- Clash will look for it when compiling "Example.Project" and translate it to
+-- HDL. While polymorphism can be used freely in Clash projects, a @topEntity@
+-- must be monomorphic and must use non- recursive types. Or, to put it
+-- hand-wavily, a @topEntity@ must be translatable to a static number of wires.
+--
+-- Top entities must be monomorphic, meaning we have to specify all type variables.
+-- In this case, we are using the @Dom50@ domain, which we created with @createDomain@
+-- and we are using 8-bit unsigned numbers.
+topEntity ::
+  Clock Dom50 ->
+  Reset Dom50 ->
+  Enable Dom50 ->
+  Signal Dom50 (Unsigned 8) ->
+  Signal Dom50 (Unsigned 8)
+topEntity = exposeClockResetEnable accum
+
+-- To specify the names of the ports of our top entity, we create a @Synthesize@ annotation.
+{-# ANN topEntity
+  (Synthesize
+    { t_name = "accum"
+    , t_inputs = [ PortName "CLK"
+                 , PortName "RST"
+                 , PortName "EN"
+                 , PortName "DIN"
+                 ]
+    , t_output = PortName "DOUT"
+    }) #-}
+
+-- Make sure GHC does not apply any optimizations to the boundaries of the design.
+-- For GHC versions 9.2 or older, use: {-# NOINLINE topEntity #-}
+{-# OPAQUE topEntity #-}
+
+-- | A simple accumulator that works on unsigned numbers of any size.
+-- It has hidden clock, reset, and enable signals.
+accum ::
+  (HiddenClockResetEnable dom, KnownNat n) =>
+  Signal dom (Unsigned n) ->
+  Signal dom (Unsigned n)
+accum = mealy accumT 0
+ where
+  accumT s i = (s + i, s)
 
 {-# START_FILE stack.yaml #-}
 resolver: lts-21.20
@@ -455,6 +490,7 @@ extra-deps:
 - clash-ghc-1.8.1@sha256:3bab304fa5584f3541650bddd01160f2710b9ced52e52c06481a91ac73d71bb8,9753
 - clash-lib-1.8.1@sha256:17d78e786dedf16a76394cd5813372870a3d70a1a4c7f964309f126b800e90f6,15693
 - clash-prelude-1.8.1@sha256:c3fbb9f6b8e74140fb3d5c4d59ec84cfe4a53e9f8520e606c187cfc04b149065,17626
+- clash-prelude-hedgehog-1.8.1@sha256:9ec3aa3f8195481f5ce4942b34a49c97dd132dd1c8f1fa58aeecbd82c2602e86,1410
 - concurrent-supply-0.1.8@sha256:80b658533141660818d0781b8c8fb9a8cf69b987fcfbab782dc788bfc7df4846,1627
 - prettyprinter-interp-0.2.0.0@sha256:69c339a95b265dab9b3478ca19ec96952b6b472bd0ff6e2127112a9562362c1d,2086
 
@@ -463,28 +499,52 @@ module Tests.Example.Project where
 
 import Prelude
 
+import Clash.Hedgehog.Sized.Unsigned
 import Test.Tasty
 import Test.Tasty.TH
 import Test.Tasty.Hedgehog
 
-import Hedgehog ((===))
+import qualified Clash.Prelude as C
 import qualified Hedgehog as H
 import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
 
-import Example.Project (plus)
+-- Import the module containing the @accum@ function
+import Example.Project (accum)
 
-prop_plusIsCommutative :: H.Property
-prop_plusIsCommutative = H.property $ do
-  a <- H.forAll (Gen.integral (Range.linear minBound maxBound))
-  b <- H.forAll (Gen.integral (Range.linear minBound maxBound))
-  plus a b === plus b a
+-- Define a Hedgehog property to test the @accum@ function
+prop_accum :: H.Property
+prop_accum = H.property $ do
 
-tests :: TestTree
-tests = $(testGroupGenerator)
+  -- Simulate for a random duration between 1 and 100 cycles
+  simDuration <- H.forAll (Gen.integral (Range.linear 1 100))
+
+  -- Generate a list of random unsigned numbers.
+  inp <- H.forAll
+    (Gen.list (Range.singleton simDuration)
+    (genUnsigned Range.linearBounded))
+  let
+
+    -- Simulate the @accum@ function for the pre-existing @System@ domain
+    -- and 8 bit unsigned numbers.
+    --
+    -- The (hidden) reset input of @accum@ will be asserted in the first cycle;
+    -- during this cycle it will emit its initial value and the input is
+    -- ignored. So we need to present a dummy input value.
+    simOut = C.sampleN (simDuration + 1) (accum @C.System @8 (C.fromList (0:inp)))
+    -- Calculate the expected output. The first cycle is the initial value, and
+    -- the result of the final input value does not appear because the
+    -- accumulator has 1 cycle latency.
+    expected = 0 : init (scanl (+) 0 inp)
+
+  -- Check that the simulated output matches the expected output
+  simOut H.=== expected
+
+accumTests :: TestTree
+accumTests = $(testGroupGenerator)
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMain accumTests
 
 {-# START_FILE tests/doctests.hs #-}
 module Main where
@@ -505,7 +565,7 @@ import qualified Tests.Example.Project
 
 main :: IO ()
 main = defaultMain $ testGroup "."
-  [ Tests.Example.Project.tests
+  [ Tests.Example.Project.accumTests
   ]
 
 {-# START_FILE {{name}}.cabal #-}
@@ -531,12 +591,15 @@ common common-options
     DeriveLift
     DeriveTraversable
     DerivingStrategies
+    FlexibleContexts
     InstanceSigs
     KindSignatures
     LambdaCase
+    NamedFieldPuns
     NoStarIsType
     PolyKinds
     RankNTypes
+    RecordWildCards
     ScopedTypeVariables
     StandaloneDeriving
     TupleSections
@@ -635,6 +698,7 @@ test-suite test-library
   build-depends:
     {{name}},
     QuickCheck,
+    clash-prelude-hedgehog,
     hedgehog,
     tasty >= 1.2 && < 1.5,
     tasty-hedgehog,

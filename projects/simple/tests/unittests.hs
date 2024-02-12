@@ -6,5 +6,5 @@ import qualified Tests.Example.Project
 
 main :: IO ()
 main = defaultMain $ testGroup "."
-  [ Tests.Example.Project.tests
+  [ Tests.Example.Project.accumTests
   ]
