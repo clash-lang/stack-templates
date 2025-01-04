@@ -484,7 +484,7 @@ accum = mealy accumT 0
   accumT s i = (s + i, s)
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-23.2
+resolver: lts-22.43
 
 extra-deps:
 - clash-ghc-1.8.2@sha256:a5e5fe902fbc02f2fc825e13855b9e57bbc782928bc1820c29d3faabaa8457bb,9802
