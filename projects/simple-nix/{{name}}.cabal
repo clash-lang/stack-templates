@@ -75,7 +75,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.8.1 && < 1.10,
+    clash-prelude >= 1.8.2 && < 1.10,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -125,6 +125,6 @@ test-suite test-library
     QuickCheck,
     clash-prelude-hedgehog,
     hedgehog,
-    tasty >= 1.2 && < 1.5,
+    tasty >= 1.2 && < 1.6,
     tasty-hedgehog,
     tasty-th

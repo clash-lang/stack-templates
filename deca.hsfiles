@@ -337,7 +337,7 @@ test-suite test-library
     {{name}},
     QuickCheck,
     hedgehog,
-    tasty >= 1.2 && < 1.5,
+    tasty >= 1.2 && < 1.6,
     tasty-hedgehog,
     tasty-th
 ```
@@ -599,14 +599,13 @@ blinkerT (leds, mode, cntr) key1R = ((leds', mode', cntr'), complement leds)
           | otherwise = leds
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-21.20
+resolver: lts-23.2
 
 extra-deps:
-- clash-ghc-1.8.1@sha256:3bab304fa5584f3541650bddd01160f2710b9ced52e52c06481a91ac73d71bb8,9753
-- clash-lib-1.8.1@sha256:17d78e786dedf16a76394cd5813372870a3d70a1a4c7f964309f126b800e90f6,15693
-- clash-prelude-1.8.1@sha256:c3fbb9f6b8e74140fb3d5c4d59ec84cfe4a53e9f8520e606c187cfc04b149065,17626
-- clash-prelude-hedgehog-1.8.1@sha256:9ec3aa3f8195481f5ce4942b34a49c97dd132dd1c8f1fa58aeecbd82c2602e86,1410
-- concurrent-supply-0.1.8@sha256:80b658533141660818d0781b8c8fb9a8cf69b987fcfbab782dc788bfc7df4846,1627
+- clash-ghc-1.8.2@sha256:a5e5fe902fbc02f2fc825e13855b9e57bbc782928bc1820c29d3faabaa8457bb,9802
+- clash-lib-1.8.2@sha256:bf494184c73cdb27016ce61d471a2ba3d3959703e576dda3181d85431fba47e2,15721
+- clash-prelude-1.8.2@sha256:a9409f93aa7806a4fb4d39efc7fae78f638cfd0e9bd57140adf04e0f2fcc27bf,17871
+- clash-prelude-hedgehog-1.8.2@sha256:4ffc0a4897a60cfae1bee5feaa946be652942bcdd624b3bf153b4596754ddd0b,1410
 - prettyprinter-interp-0.2.0.0@sha256:69c339a95b265dab9b3478ca19ec96952b6b472bd0ff6e2127112a9562362c1d,2086
 
 {-# START_FILE syn/addclashsources.tcl #-}
@@ -843,7 +842,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.8.1 && < 1.10,
+    clash-prelude >= 1.8.2 && < 1.10,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -895,7 +894,7 @@ test-suite test-library
     {{name}},
     QuickCheck,
     hedgehog,
-    tasty >= 1.2 && < 1.5,
+    tasty >= 1.2 && < 1.6,
     tasty-hedgehog,
     tasty-th
 

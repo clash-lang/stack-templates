@@ -152,7 +152,7 @@ Note that this whole section is a `common` "stanza". We'll use it as a template 
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.8.1 && < 1.10,
+    clash-prelude >= 1.8.2 && < 1.10,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -200,7 +200,7 @@ test-suite test-library
     {{name}},
     QuickCheck,
     hedgehog,
-    tasty >= 1.2 && < 1.5,
+    tasty >= 1.2 && < 1.6,
     tasty-hedgehog,
     tasty-th
 ```
