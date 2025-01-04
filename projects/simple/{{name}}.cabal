@@ -129,6 +129,6 @@ test-suite test-library
     QuickCheck,
     clash-prelude-hedgehog,
     hedgehog,
-    tasty >= 1.2 && < 1.5,
+    tasty >= 1.2 && < 1.6,
     tasty-hedgehog,
     tasty-th
