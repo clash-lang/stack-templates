@@ -1,0 +1,6 @@
+packages:
+  orangecrab.cabal
+  clash/clash-proxy.cabal
+
+write-ghc-environment-files: always
+

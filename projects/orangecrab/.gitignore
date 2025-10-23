@@ -1,0 +1,6 @@
+01-clash/
+02-hdl/
+_build/
+dist-newstyle/
+.ghc.environment.*
+*.local
