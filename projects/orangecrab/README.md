@@ -12,7 +12,7 @@ The setup uses a combination of `cabal` and `make`, where
 
 ### Cabal
 
-In terms of Haskell / Clash package management, everything is fairly standard. Have a look at the [`orangecrab.cabal`](orangecrab.cabal) and the [`cabal.project`](../cabal.project) files for the particular details. The only special juice is given by the fact that of the additionally used `top` directory, which can contain multiple files to choose among different top entities to be built. They are managed as named libraries within the `orangecrab.cabal` to make them all available via `cabal repl`. Anything else is managed via the `makefile` instead.
+In terms of Haskell / Clash package management, everything is fairly standard. Have a look at the [`orangecrab.cabal`](orangecrab.cabal) and the [`cabal.project`](../cabal.project) files for the particular details.
 
 ### Make
 
@@ -24,7 +24,7 @@ The `makefile` includes the additional configuration file [`build.cfg`](build.cf
 
 Some references on where to get all of the required external tooling are also given as part of the configuration file.
 
-The particular top entity to be built can be selected via overriding the `NAME` parameter in the `build.cfg.local`. Just set it to the name of the file in the `top` directory shall be built (without the `.hs` ending). See the `makefile` for the pre-configured default.
+The particular top entity to be built can be selected via overriding the `NAME` parameter in the `build.cfg.local`. Just set it to the name of the file in the `src` directory shall be built (without the `.hs` ending). See the `makefile` for the pre-configured default.
 
 #### Usage
 

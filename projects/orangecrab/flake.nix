@@ -27,11 +27,13 @@
               (clashCompilerSrc + "/clash-prelude") { };
             clash-prelude-hedgehog = prev.callCabal2nix "clash-prelude-hedgehog"
               (clashCompilerSrc + "/clash-prelude-hedgehog") { };
-            clash-lib = prev.callCabal2nix "clash-lib"
-              (clashCompilerSrc + "/clash-lib") { };
+            clash-lib = dontCheck (doJailbreak (prev.callCabal2nix "clash-lib"
+              (clashCompilerSrc + "/clash-lib") { }));
             clash-ghc = prev.callCabal2nix "clash-ghc"
               (clashCompilerSrc + "/clash-ghc") { };
             serialport = dontCheck (prev.callCabal2nix "serialport" serialportSrc { });
+            hint = doJailbreak prev.hint;
+            string-interpolate = doJailbreak prev.string-interpolate;
             orangecrab = final.callCabal2nix "orangecrab" ./. { };
           };
           myHsPkgs = pkgs.haskell.packages.ghc9101.extend overlay;
