@@ -1,5 +1,7 @@
 01-clash/
 02-hdl/
+03-net/
+04-bitstream/
 _build/
 dist-newstyle/
 .ghc.environment.*
