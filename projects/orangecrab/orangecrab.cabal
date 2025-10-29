@@ -74,7 +74,7 @@ library
 -- Builds the executable 'clash', with {{name}} project in scope
 executable clash
   main-is: bin/Clash.hs
-  Build-Depends: base, clash-ghc, {{name}}
+  Build-Depends: base, clash-ghc, orangecrab
   if !os(Windows)
     ghc-options: -dynamic
 
@@ -83,7 +83,7 @@ executable clashi
   main-is: bin/Clashi.hs
   if !os(Windows)
     ghc-options: -dynamic
-  build-depends: base, clash-ghc, {{name}}
+  build-depends: base, clash-ghc, orangecrab
 
 test-suite tests
   import: common-options

@@ -14,23 +14,39 @@ import Clash.Annotations.TH
 import Clash.Prelude
 
 import Orangecrab.Domain
-import RGB
+import RGB (RGB, red, green, blue, driveRGB)
 
 topEntity ::
+  -- | Orangecrab clock pin
   "CLK" ::: Clock Dom48 ->
+  -- | Builtin orangecrab button
   "BTN" ::: Reset Dom48 ->
+  -- | Orangecrab pin L4, as defined in the `orangecrab.pcf` file
+  "PMOD3_0" ::: Signal Dom48 Bool ->
+  -- | Builtin orangecrab LED
   "rgb_led0" ::: Signal Dom48 RGB
-topEntity clk rst = withClockResetEnable clk rst enableGen
-  $ driveRGB $ mealy (~~>) (0 :: Index 48_000_000, 0 :: Index 9) $ pure ()
+topEntity clk rst btn = withClockResetEnable clk rst enableGen (blink btn)
+
+
+blink ::
+  -- | Constraint hiding the Clock, Reset, and Enable signals
+  HiddenClockResetEnable dom =>
+  -- | Whether to reset counter
+  Signal dom Bool ->
+  -- | Output color for LED (as RGB)
+  Signal dom RGB
+blink btn = driveRGB (mealy blinkStep initState btn)
  where
-  (c, s) ~~> () =
-    ( ( satSucc SatWrap c
-      , if c == 0 then satSucc SatWrap s else s
+  initState = (0 :: Unsigned 32, 0 :: Index 3)
+
+  blinkStep (counter, colorIndex) _restart =
+    ( ( counter + 1
+      , if counter == 0 then satSucc SatWrap colorIndex else colorIndex
       )
-    , (!! s)
-    $ black  :> red    :> green :> blue   :> white :>
-      yellow :> orange :> cyan  :> violet :> Nil
+    , blinkColors !! colorIndex
     )
+
+  blinkColors = red :> green :> blue :> Nil
 
 
 -- | A simple accumulator that works on unsigned numbers of any size.
