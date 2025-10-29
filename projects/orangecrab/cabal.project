@@ -1,5 +1,5 @@
 packages:
-  orangecrab.cabal
+  {{name}}.cabal
 
 write-ghc-environment-files: always
 

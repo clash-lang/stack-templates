@@ -1,6 +1,6 @@
 cabal-version:       2.4
-name:                orangecrab
-synopsis:            orangecrab
+name:                {{name}}
+synopsis:            {{name}}
 description:         Demo applications for the OrangeCrab r0.2.1
 version:             0.1
 License:             MIT
