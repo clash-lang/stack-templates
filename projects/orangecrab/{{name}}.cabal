@@ -74,7 +74,7 @@ library
 -- Builds the executable 'clash', with {{name}} project in scope
 executable clash
   main-is: bin/Clash.hs
-  Build-Depends: base, clash-ghc, orangecrab
+  Build-Depends: base, clash-ghc, {{name}}
   if !os(Windows)
     ghc-options: -dynamic
 
@@ -83,7 +83,7 @@ executable clashi
   main-is: bin/Clashi.hs
   if !os(Windows)
     ghc-options: -dynamic
-  build-depends: base, clash-ghc, orangecrab
+  build-depends: base, clash-ghc, {{name}}
 
 test-suite tests
   import: common-options
@@ -94,7 +94,7 @@ test-suite tests
   other-modules:
     Test.Blink
   build-depends:
-    orangecrab,
+    {{name}},
     clash-prelude-hedgehog,
     hedgehog,
     tasty >= 1.5,
