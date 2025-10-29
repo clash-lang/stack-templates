@@ -71,9 +71,22 @@ library
     Orangecrab.Domain
     RGB
 
+-- Builds the executable 'clash', with {{name}} project in scope
+executable clash
+  main-is: bin/Clash.hs
+  Build-Depends: base, clash-ghc, {{name}}
+  if !os(Windows)
+    ghc-options: -dynamic
+
+-- Builds the executable 'clashi', with {{name}} project in scope
+executable clashi
+  main-is: bin/Clashi.hs
+  if !os(Windows)
+    ghc-options: -dynamic
+  build-depends: base, clash-ghc, {{name}}
+
 test-suite tests
   import: common-options
-  default-language: GHC2021
   hs-source-dirs: test
   type: exitcode-stdio-1.0
   ghc-options: -threaded
