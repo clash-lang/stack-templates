@@ -13,7 +13,23 @@ import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
 
 -- Import the module containing the @accum@ function
-import Blink (accum)
+import Blink (accum, blink)
+
+prop_blink :: H.Property
+prop_blink = H.property $ do
+  nthCycle <- H.forAll (Gen.integral (Range.linear 3 100))
+
+  let
+    input = List.repeat False
+    inputWithReset = List.replicate nthCycle False <> [True] <> input
+
+    simOutInfinite = List.drop (nthCycle+1) (C.sample (blink inputWithReset))
+    expectedInfinite = C.sample (blink input)
+
+    simOut = List.take 100 simOutInfinite
+    expected = List.take 100 expectedInfinite
+
+  simOut H.=== expected
 
 -- Define a Hedgehog property to test the @accum@ function
 prop_accum :: H.Property
