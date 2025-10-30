@@ -32,7 +32,7 @@ prop_blink = H.property $ do
     numberRgbProperty (RGB r g b) = 1 >= (fromEnum r + fromEnum g + fromEnum b)
 
     output :: [RGB]
-    output = C.sample @System (blink (C.fromList input))
+    output = C.sample @C.System (blink (C.fromList input))
 
     -- Drop the 1st clock cycle, which corresponds to RESET, and then take
     -- the next `numTestCycles` cycles to test (so that we don't try to

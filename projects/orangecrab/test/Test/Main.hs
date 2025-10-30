@@ -6,5 +6,5 @@ import qualified Test.Blink
 
 main :: IO ()
 main = defaultMain $ testGroup "."
-  [ Test.Blink.accumTests
+  [ Test.Blink.blinkTests
   ]
