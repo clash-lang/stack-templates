@@ -11,64 +11,44 @@ import qualified Clash.Prelude as C
 import qualified Hedgehog as H
 import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
+import qualified Data.List as List
 
 -- Import the module containing the @accum@ function
-import Blink (accum, blink)
+import Blink (blink)
+import RGB (RGB(..))
 
+
+-- Test the property that blink at most drives one of the (r, g, b) leds within
+-- the orangecrab multicolor led.
 prop_blink :: H.Property
 prop_blink = H.property $ do
-  nthCycle <- H.forAll (Gen.integral (Range.linear 3 100))
+  numTestCycles <- H.forAll (Gen.integral (Range.linear 3 500))
 
   let
-    numberRGB :: RGB -> Int
-    numberRGB (RGB r g b) = fromEnum r + fromEnum g + fromEnum b
-
-    rgbMaxOne :: RGB -> Bool
-    rgbMaxOne rgb = numberRGB rgb >= 1
-
+    input :: [Bool]
     input = List.repeat False
 
-    simOutInfinite = List.drop (nthCycle+1) (C.sample (blink inputWithReset))
+    numberRgbProperty :: RGB -> Bool
+    numberRgbProperty (RGB r g b) = 1 >= (fromEnum r + fromEnum g + fromEnum b)
 
-    simOut :: [RGB]
-    simOut = List.take 100 simOutInfinite
+    output :: [RGB]
+    output = C.sample @System (blink (C.fromList input))
+
+    -- Drop the 1st clock cycle, which corresponds to RESET, and then take
+    -- the next `numTestCycles` cycles to test (so that we don't try to
+    -- compare two infinite lists, causing the test to hang).
+    outputFinite :: [RGB]
+    outputFinite = List.take numTestCycles (List.drop 1 output)
 
     propertyHolds :: [Bool]
-    propertyHolds = List.map rgbMaxOne simOut
+    propertyHolds = List.map numberRgbProperty outputFinite
 
-  propertyHolds H.=== List.replicate 100 True
+  propertyHolds H.=== List.replicate numTestCycles True
 
 
--- Define a Hedgehog property to test the @accum@ function
-prop_accum :: H.Property
-prop_accum = H.property $ do
+blinkTests :: TestTree
+blinkTests = $(testGroupGenerator)
 
-  -- Simulate for a random duration between 1 and 100 cycles
-  simDuration <- H.forAll (Gen.integral (Range.linear 1 100))
-
-  -- Generate a list of random unsigned numbers.
-  inp <- H.forAll
-    (Gen.list (Range.singleton simDuration)
-    (genUnsigned Range.linearBounded))
-  let
-
-    -- Simulate the @accum@ function for the pre-existing @System@ domain
-    -- and 8 bit unsigned numbers.
-    --
-    -- The (hidden) reset input of @accum@ will be asserted in the first cycle;
-    -- during this cycle it will emit its initial value and the input is
-    -- ignored. So we need to present a dummy input value.
-    simOut = C.sampleN (simDuration + 1) (accum @C.System @8 (C.fromList (0:inp)))
-    -- Calculate the expected output. The first cycle is the initial value, and
-    -- the result of the final input value does not appear because the
-    -- accumulator has 1 cycle latency.
-    expected = 0 : init (scanl (+) 0 inp)
-
-  -- Check that the simulated output matches the expected output
-  simOut H.=== expected
-
-accumTests :: TestTree
-accumTests = $(testGroupGenerator)
 
 main :: IO ()
-main = defaultMain accumTests
+main = defaultMain blinkTests

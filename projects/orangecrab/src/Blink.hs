@@ -16,6 +16,7 @@ import Clash.Prelude
 import Orangecrab.Domain
 import RGB (RGB, red, green, blue, driveRGB)
 
+
 topEntity ::
   -- | Orangecrab clock pin
   "CLK" ::: Clock Dom48 ->
@@ -48,15 +49,5 @@ blink btn = driveRGB (mealy blinkStep initState btn)
 
   blinkColors = red :> green :> blue :> Nil
 
-
--- | A simple accumulator that works on unsigned numbers of any size.
--- It has hidden clock, reset, and enable signals.
-accum ::
-  (HiddenClockResetEnable dom, KnownNat n) =>
-  Signal dom (Unsigned n) ->
-  Signal dom (Unsigned n)
-accum = mealy accumT 0
- where
-  accumT s i = (s + i, s)
 
 makeTopEntity 'topEntity
