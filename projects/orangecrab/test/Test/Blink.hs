@@ -2,7 +2,6 @@ module Test.Blink where
 
 import Prelude
 
-import Clash.Hedgehog.Sized.Unsigned
 import Test.Tasty
 import Test.Tasty.TH
 import Test.Tasty.Hedgehog
