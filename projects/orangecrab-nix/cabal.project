@@ -1,5 +1,0 @@
-packages:
-  orangecrab.cabal
-
-write-ghc-environment-files: always
-
