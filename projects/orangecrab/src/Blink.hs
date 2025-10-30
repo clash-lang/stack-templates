@@ -14,7 +14,7 @@ import Clash.Annotations.TH
 import Clash.Prelude
 
 import Orangecrab.Domain
-import RGB (RGB, red, green, blue, driveRGB)
+import RGB (RGB, Color, red, green, blue, driveRGB)
 
 
 topEntity ::
@@ -32,7 +32,7 @@ topEntity clk rst btn = withClockResetEnable clk rst enableGen (blink btn)
 blink ::
   -- | Constraint hiding the Clock, Reset, and Enable signals
   HiddenClockResetEnable dom =>
-  -- | Whether to reset counter
+  -- | Input for whether to pause counter
   Signal dom Bool ->
   -- | Output color for LED (as RGB)
   Signal dom RGB
@@ -40,13 +40,17 @@ blink btn = driveRGB (mealy blinkStep initState btn)
  where
   initState = (0 :: Unsigned 32, 0 :: Index 3)
 
-  blinkStep (counter, colorIndex) _restart =
-    ( ( counter + 1
-      , if counter == 0 then satSucc SatWrap colorIndex else colorIndex
-      )
-    , blinkColors !! colorIndex
+  -- Step function for state machine
+  blinkStep (counter, colorIndex) pauseCounter =
+    ( (newCounter, newColorIndex) -- Next state of state machine
+    , blinkColors !! colorIndex   -- Output of state machine
     )
+   where
+    newCounter = if pauseCounter then counter else counter + 1
+    newColorIndex = if counter == 0 then satSucc SatWrap colorIndex else colorIndex
 
+  -- Colors to cycle through
+  blinkColors :: Vec 3 Color
   blinkColors = red :> green :> blue :> Nil
 
 
