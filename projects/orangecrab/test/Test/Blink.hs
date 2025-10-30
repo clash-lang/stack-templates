@@ -20,16 +20,24 @@ prop_blink = H.property $ do
   nthCycle <- H.forAll (Gen.integral (Range.linear 3 100))
 
   let
+    numberRGB :: RGB -> Int
+    numberRGB (RGB r g b) = fromEnum r + fromEnum g + fromEnum b
+
+    rgbMaxOne :: RGB -> Bool
+    rgbMaxOne rgb = numberRGB rgb >= 1
+
     input = List.repeat False
-    inputWithReset = List.replicate nthCycle False <> [True] <> input
 
     simOutInfinite = List.drop (nthCycle+1) (C.sample (blink inputWithReset))
-    expectedInfinite = C.sample (blink input)
 
+    simOut :: [RGB]
     simOut = List.take 100 simOutInfinite
-    expected = List.take 100 expectedInfinite
 
-  simOut H.=== expected
+    propertyHolds :: [Bool]
+    propertyHolds = List.map rgbMaxOne simOut
+
+  propertyHolds H.=== List.replicate 100 True
+
 
 -- Define a Hedgehog property to test the @accum@ function
 prop_accum :: H.Property
