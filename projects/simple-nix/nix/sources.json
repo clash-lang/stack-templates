@@ -5,12 +5,12 @@
         "homepage": "https://clash-lang.org/",
         "owner": "clash-lang",
         "repo": "clash-compiler",
-        "rev": "49f33ea971eb52b1dbdb7b11dafe0849408001f6",
-        "sha256": "102l671jr1jxvs8qmqxxrq5fdf254pcmjv9z1dwc7sbfbzy9jxqb",
+        "rev": "1be4daba2cad5e5e83136cda9af79339b3ec200a",
+        "sha256": "0szwgvcrnyydz2mgbb1yjpik5vqwk6ibd2syiz3d60skr62v440x",
         "type": "tarball",
-        "url": "https://github.com/clash-lang/clash-compiler/archive/49f33ea971eb52b1dbdb7b11dafe0849408001f6.tar.gz",
+        "url": "https://github.com/clash-lang/clash-compiler/archive/1be4daba2cad5e5e83136cda9af79339b3ec200a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
-        "version": "1.8.2"
+        "version": "1.8.4"
     },
     "doctest-parallel": {
         "branch": "main",
