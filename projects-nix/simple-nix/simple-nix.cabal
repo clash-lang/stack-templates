@@ -1,5 +1,5 @@
 cabal-version:       2.4
-name:                {{name}}
+name:                simple-nix
 version:             0.1
 license:             BSD-2-Clause
 author:              John Smith <john@example.com>
@@ -88,17 +88,17 @@ library
     Example.Project
   default-language: Haskell2010
 
--- Builds the executable 'clash', with {{name}} project in scope
+-- Builds the executable 'clash', with simple-nix project in scope
 executable clash
   main-is: bin/Clash.hs
   default-language: Haskell2010
-  Build-Depends: base, clash-ghc, {{name}}
+  Build-Depends: base, clash-ghc, simple-nix
 
--- Builds the executable 'clashi', with {{name}} project in scope
+-- Builds the executable 'clashi', with simple-nix project in scope
 executable clashi
   main-is: bin/Clashi.hs
   default-language: Haskell2010
-  build-depends: base, clash-ghc, {{name}}
+  build-depends: base, clash-ghc, simple-nix
 
 test-suite doctests
   type:             exitcode-stdio-1.0
@@ -108,7 +108,7 @@ test-suite doctests
   hs-source-dirs:   tests
   build-depends:
     base,
-    {{ name }},
+    simple-nix,
     doctest-parallel >= 0.2 && < 0.4,
 
 test-suite test-library
@@ -121,7 +121,7 @@ test-suite test-library
   other-modules:
     Tests.Example.Project
   build-depends:
-    {{name}},
+    simple-nix,
     QuickCheck,
     clash-prelude-hedgehog,
     hedgehog,
