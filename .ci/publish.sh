@@ -37,4 +37,4 @@ git add -A
 git commit -m "Automated push from clash-lang/stack-templates"
 
 # Push
-git push -f
+git push --force origin main:test-deployment
