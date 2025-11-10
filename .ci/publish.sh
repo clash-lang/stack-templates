@@ -51,4 +51,4 @@ git add -A
 git commit -m "Automated push from clash-lang/stack-templates"
 
 # Push
-git push --force origin main
+git push --force origin main:test-deployment
