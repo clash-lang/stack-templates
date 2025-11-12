@@ -7,6 +7,16 @@ Templates for `stack new` command. To use this template perform the following st
 ## Cabal users
 All starter projects are also available on [clash-lang/clash-starters](https://github.com/clash-lang/clash-starters).
 
+## Nix users
+
+Nix users can immediately get the `simple-nix` template up and running by executing:
+```
+mkdir starter && cd starter
+nix flake init -t github:clash-lang/clash-starters
+```
+
+Read the `README.md` inside of the newly created directory for more information on how to use Nix with Clash.
+
 ## Contributing
 If you wish to contribute to this template, edit them in `projects/` and perform the following steps to test the template:
 1. Edit the template
