@@ -5,25 +5,27 @@ IFS=$'\n\t'
 
 cd "$(git rev-parse --show-toplevel)"
 
-for project in *.hsfiles; do
-    nix-shell --pure --packages stack --run "stack new inst \"${project}\""
 
-    cd inst
+for project in projects-nix/*; do
+    # Copy the directory and resolve symlinks
+    # The reason we copy the directory rather than invoking `nix init ...` is because nix init does
+    # not resolve symlinks. However these symlinks *are* resolved as soon as it gets copied over to
+    # `clash-starters`. So to 'mimick' the behaviour of `nix init` we just copy over the directory.
+    cp -rL "$project" ci-project
+    # If files aren't referenced by git, Nix gets very confused
+    # This is not needed outside of a git repository, but since the files get copied over in a
+    # git repository, we need to do this
+    git add -A
+    cd ci-project
 
-    if [[ -f "shell.nix" ]]; then
-        # Build and test with nix. Note that nix-build already runs the tests,
-        # but we'd also like to be able to run them using just cabal in a shell.
-        nix-build
-        if [[ ${project} != "deca.hsfiles" ]]; then
-            nix-shell --pure --run "cabal run clash -- Example.Project --vhdl"
-        else
-            nix-shell --pure --run "cabal run clash -- DECA --vhdl"
-        fi
-        nix-shell --pure --run "cabal run doctests"
-        nix-shell --pure --run "cabal run test-library"
-    fi
+    # Test
+    nix build . --accept-flake-config
+    nix develop . --accept-flake-config -c cabal update
+    # The `nix run` is supposed to run inside of `nix develop`
+    nix develop . --accept-flake-config -c nix run . --accept-flake-config
+    nix develop . --accept-flake-config -c cabal run doctests
+    nix develop . --accept-flake-config -c cabal run test-library
 
     # Clean up
-    cd ..
-    rm -rf inst
+    rm -rf ./ci-project
 done

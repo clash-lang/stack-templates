@@ -6,8 +6,8 @@
   };
   nixConfig = {
     extra-substituters = [ "https://clash-lang.cachix.org" ];
-    trusted-substituters = [ "https://clash-lang.cachix.org" ];
-    trusted-public-keys = [ "clash-lang.cachix.org-1:/2N1uka38B/heaOAC+Ztd/EWLmF0RLfizWgC5tamCBg=" ];
+    extra-trusted-substituters = [ "https://clash-lang.cachix.org" ];
+    extra-trusted-public-keys = [ "clash-lang.cachix.org-1:/2N1uka38B/heaOAC+Ztd/EWLmF0RLfizWgC5tamCBg=" ];
   };
   outputs = { self, nixpkgs, flake-utils, clash-compiler }:
     flake-utils.lib.eachDefaultSystem (system:
