@@ -12,13 +12,12 @@ import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
 import qualified Data.List as List
 
--- Import the module containing the @accum@ function
 import Blink (blink)
 import RGB (RGB(..))
 
 
--- Test the property that blink at most drives one of the (r, g, b) leds within
--- the orangecrab multicolor led.
+-- Test the property that blink drives at most one of the (r, g, b) leds within
+-- the orangecrab multicolor led at a time.
 prop_blink :: H.Property
 prop_blink = H.property $ do
   numTestCycles <- H.forAll (Gen.integral (Range.linear 3 500))

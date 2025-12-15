@@ -62,6 +62,11 @@ ${BUILDDIR}/02-hdl/${TOP}.v: src/${NAME}.hs dist-newstyle/packagedb src/*
 dist-newstyle/packagedb:
 	${CABAL} build
 
+# Conditionally override to build with stack
+ifeq ($(USE_STACK), yes)
+CABAL=stack
+endif
+
 ##----------------------------------------------------------------------------##
 #   Cleanup                                                                    #
 ##----------------------------------------------------------------------------##
@@ -73,6 +78,6 @@ clean:
 #   Special Targets                                                            #
 ##----------------------------------------------------------------------------##
 
-.PHONY: clean nano4k upload nano4k-upload
+.PHONY: clean upload
 .SECONDARY:
 .SILENT:
