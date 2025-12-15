@@ -2,9 +2,9 @@ import Prelude
 
 import Test.Tasty
 
-import qualified Test.Blink
+import qualified Tests.Blink
 
 main :: IO ()
 main = defaultMain $ testGroup "."
-  [ Test.Blink.blinkTests
+  [ Tests.Blink.blinkTests
   ]

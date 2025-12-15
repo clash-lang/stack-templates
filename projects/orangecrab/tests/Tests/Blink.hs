@@ -1,4 +1,4 @@
-module Test.Blink where
+module Tests.Blink where
 
 import Prelude
 
