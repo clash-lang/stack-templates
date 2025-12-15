@@ -47,20 +47,23 @@ ${BUILDDIR}/03-net/$(TOP).json: ${BUILDDIR}/02-hdl/${TOP}.v
 		-l ${BUILDDIR}/log/synth.log \
 		-p 'read_verilog $(dir $^)/*.v; synth_ecp5 -top $(TOP) -json $@'
 
-${BUILDDIR}/02-hdl/${TOP}.v: src/${NAME}.hs dist-newstyle/packagedb src/*
-	${CABAL} build
-	mkdir -p ${BUILDDIR}/01-clash
-	echo
-	${CABAL} run clash -- \
-		-package-env $(abspath).ghc.environment.* \
-		--verilog \
-		-outputdir ${BUILDDIR}/01-clash \
-		$<
-	rm -Rf ${BUILDDIR}/02-hdl
-	mv ${BUILDDIR}/01-clash/${NAME}.topEntity ${BUILDDIR}/02-hdl
+${BUILDDIR}/02-hdl/${TOP}.v: ${BUILDDIR}/log/cabal-build.log
+        mkdir -p ${BUILDDIR}/01-clash
+        echo
+        ${CABAL} v2-run clash -- \
+                -package-env $(abspath).ghc.environment.* \
+                --verilog \
+                -outputdir ${BUILDDIR}/01-clash \
+                ${NAME}
+        rm -Rf ${BUILDDIR}/02-hdl
+        mv ${BUILDDIR}/01-clash/${NAME}.topEntity ${BUILDDIR}/02-hdl
 
 dist-newstyle/packagedb:
 	${CABAL} build
+
+haskell:
+	mkdir -p ${BUILDDIR}/log
+	${CABAL} v2-build --build-summary=${BUILDDIR}/log/cabal-build.log
 
 # Conditionally override to build with stack
 ifeq ($(USE_STACK), yes)
@@ -78,6 +81,6 @@ clean:
 #   Special Targets                                                            #
 ##----------------------------------------------------------------------------##
 
-.PHONY: clean upload
+.PHONY: clean upload haskell
 .SECONDARY:
 .SILENT:
