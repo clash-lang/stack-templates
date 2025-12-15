@@ -22,8 +22,6 @@ default: bitstream
 upload: ${BUILDDIR}/04-bitstream/${TOP}.bit
 	${PROG} -S $<
 
-hdl: ${BUILDDIR}/02-hdl/${TOP}.v
-
 synth: ${BUILDDIR}/03-net/$(TOP).json
 
 netlist: ${BUILDDIR}/04-bitstream/$(TOP).config
@@ -47,28 +45,10 @@ ${BUILDDIR}/03-net/$(TOP).json: ${BUILDDIR}/02-hdl/${TOP}.v
 		-l ${BUILDDIR}/log/synth.log \
 		-p 'read_verilog $(dir $^)/*.v; synth_ecp5 -top $(TOP) -json $@'
 
-${BUILDDIR}/02-hdl/${TOP}.v: ${BUILDDIR}/log/cabal-build.log
-        mkdir -p ${BUILDDIR}/01-clash
-        echo
-        ${CABAL} v2-run clash -- \
-                -package-env $(abspath).ghc.environment.* \
-                --verilog \
-                -outputdir ${BUILDDIR}/01-clash \
-                ${NAME}
+${BUILDDIR}/02-hdl/${TOP}.v: verilog/${NAME}.${TOP}/${TOP}.v
+        mkdir -p ${BUILDDIR}
         rm -Rf ${BUILDDIR}/02-hdl
-        mv ${BUILDDIR}/01-clash/${NAME}.topEntity ${BUILDDIR}/02-hdl
-
-dist-newstyle/packagedb:
-	${CABAL} build
-
-haskell:
-	mkdir -p ${BUILDDIR}/log
-	${CABAL} v2-build --build-summary=${BUILDDIR}/log/cabal-build.log
-
-# Conditionally override to build with stack
-ifeq ($(USE_STACK), yes)
-CABAL=stack
-endif
+				cp -a verilog/${NAME}.${TOP} ${BUILDDIR}/02-hdl
 
 ##----------------------------------------------------------------------------##
 #   Cleanup                                                                    #
@@ -81,6 +61,6 @@ clean:
 #   Special Targets                                                            #
 ##----------------------------------------------------------------------------##
 
-.PHONY: clean upload haskell
+.PHONY: clean upload
 .SECONDARY:
 .SILENT:
