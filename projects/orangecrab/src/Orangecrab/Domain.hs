@@ -18,6 +18,7 @@ import Clash.Prelude
 -- | 48 MHz oscillator clock of the OrangeCrab board.
 createDomain vSystem
   { vName = "Dom48"
-  , vResetPolarity = ActiveLow
   , vPeriod = hzToPeriod 48_000_000
+  , vResetKind = Synchronous
+  , vResetPolarity = ActiveLow
   }
