@@ -103,7 +103,7 @@ We currently recommend Visual Studio Code in combination with the _Haskell_ plug
 # Running the project on the OrangeCrab
 
 ## Prerequisites
-The project requires `yosys`, `nextpnr`, and `prjtrellis`. If you have `nix` installed, you can run `nix develop` to automatically pull in the tools. Otherwise, you will need to install them yourself.
+The project requires `yosys`, `nextpnr`, and `prjtrellis`. You will need to install them (they are all part of [the releases of the nightly builds of OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build/releases).
 
 ## Build Architecture
 
@@ -141,8 +141,6 @@ The output of each target is stored in a corresponding sub-directory within an a
 ### Blink
 
 Simple blinking example using the RGB LED on the OrangeCrab r0.2.1 board. Running `make upload` should flash the OrangeCrab with the example.
-
-Note that the example code uses a domain with [`Defined`](https://hackage-content.haskell.org/package/clash-prelude/docs/Clash-Signal.html#t:InitBehavior) initial values for ease of use: that way the design starts running correctly after programming the FPGA. However, with the FPGA used on the OrangeCrab, registers that have an initial value of 1 take up extra logic in the FPGA, whereas registers with an initial value of 0 do not (multi-bit registers are simply built up from multiple single bit registers). For this reason, a domain with [`Unknown`](https://hackage-content.haskell.org/package/clash-prelude/docs/Clash-Signal.html#t:InitBehavior) initial values results in more optimal resource usage, but these designs might not start in their reset state after programming and pressing the reset button on the board after programming might be needed to properly initialize the design. For serious designs, it could make sense to choose a domain with `Unknown` initial values.
 
 # Change the license
 By default `{{name}}.cabal` sets its `license` field to `BSD-2-Clause`. You might want to change this.
