@@ -45,5 +45,5 @@ driveRGB desiredColor = mealy drive 0 desiredColor
  where
   drive counter color =
     ( counter + 1
-    , RGB (counter < color.r) (counter < color.g) (counter < color.b)
+    , RGB (counter >= color.r) (counter >= color.g) (counter >= color.b)
     )
