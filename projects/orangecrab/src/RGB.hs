@@ -1,11 +1,4 @@
 {-|
-Module      : RGB
-Copyright   : Copyright © 2024 QBayLogic B.V.
-License     : MIT
-Maintainer  : QBayLogic B.V.
-Stability   : experimental
-Portability : POSIX
-
 RGB led color mixing.
 -}
 {-# LANGUAGE OverloadedRecordDot #-}

@@ -1,11 +1,4 @@
 {-|
-Module      : Domain
-Copyright   : Copyright © 2024 QBayLogic B.V.
-License     : MIT
-Maintainer  : QBayLogic B.V.
-Stability   : experimental
-Portability : POSIX
-
 OrangeCrab / Lattice ECP5-85F specific clock domains.
 -}
 

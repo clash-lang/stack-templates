@@ -1,11 +1,4 @@
 {-|
-Module      : Blink
-Copyright   : Copyright © 2024 QBayLogic B.V.
-License     : MIT
-Maintainer  : QBayLogic B.V.
-Stability   : experimental
-Portability : POSIX
-
 Blinking RGB led.
 -}
 module Blink where
