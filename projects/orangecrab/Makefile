@@ -46,9 +46,9 @@ ${BUILDDIR}/02-net/$(TOP).json: ${BUILDDIR}/01-hdl/${TOP}.v
 		-p 'read_verilog $(dir $^)/*.v; synth_ecp5 -top $(TOP) -json $@'
 
 ${BUILDDIR}/01-hdl/${TOP}.v: verilog/${NAME}.${TOP}/${TOP}.v
-        mkdir -p ${BUILDDIR}
-        rm -Rf ${BUILDDIR}/01-hdl
-				cp -a verilog/${NAME}.${TOP} ${BUILDDIR}/01-hdl
+	mkdir -p ${BUILDDIR}
+	rm -Rf ${BUILDDIR}/01-hdl
+	cp -a verilog/${NAME}.${TOP} ${BUILDDIR}/01-hdl
 
 ##----------------------------------------------------------------------------##
 #   Cleanup                                                                    #
