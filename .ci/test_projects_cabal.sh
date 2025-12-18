@@ -15,11 +15,17 @@ for project in *.hsfiles; do
     cabal build
     cabal run test-library
     cabal run doctests
-    if [[ ${project} != "deca.hsfiles" ]]; then
-        cabal run clash -- Example.Project --vhdl
-    else
-        cabal run clash -- DECA --vhdl
-    fi
+    case "${project}" in
+        deca.hsfiles)
+            cabal run clash -- DECA --vhdl
+            ;;
+        orangecrab.hsfile)
+            cabal run clash -- Blink --vhdl
+            ;;
+        *)
+            cabal run clash -- Example.Project --vhdl
+            ;;
+    esac
 
     # Clean up
     cd ..
