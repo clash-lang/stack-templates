@@ -103,7 +103,7 @@ We currently recommend Visual Studio Code in combination with the _Haskell_ plug
 # Running the project on the OrangeCrab
 
 ## Prerequisites
-The project requires `yosys`, `nextpnr`, and `prjtrellis`. You will need to install them (they are all part of [the releases of the nightly builds of OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build/releases).
+The project requires `yosys`, `nextpnr`, and `prjtrellis`. You will need to install them (they are all part of [the releases of the nightly builds of OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build/releases)).
 
 ## Build Architecture
 
