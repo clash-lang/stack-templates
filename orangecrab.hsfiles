@@ -1,6 +1,3 @@
-{-# START_FILE .envrc #-}
-use flake
-
 {-# START_FILE .gitignore #-}
 /_build/
 dist/
@@ -222,7 +219,7 @@ We currently recommend Visual Studio Code in combination with the _Haskell_ plug
 # Running the project on the OrangeCrab
 
 ## Prerequisites
-The project requires `yosys`, `nextpnr`, and `prjtrellis`. If you have `nix` installed, you can run `nix develop` to automatically pull in the tools. Otherwise, you will need to install them yourself.
+The project requires `yosys`, `nextpnr`, and `prjtrellis`. You will need to install them (they are all part of [the releases of the nightly builds of OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build/releases).
 
 ## Build Architecture
 
@@ -261,8 +258,6 @@ The output of each target is stored in a corresponding sub-directory within an a
 
 Simple blinking example using the RGB LED on the OrangeCrab r0.2.1 board. Running `make upload` should flash the OrangeCrab with the example.
 
-Note that the example code uses a domain with [`Defined`](https://hackage-content.haskell.org/package/clash-prelude/docs/Clash-Signal.html#t:InitBehavior) initial values for ease of use: that way the design starts running correctly after programming the FPGA. However, with the FPGA used on the OrangeCrab, registers that have an initial value of 1 take up extra logic in the FPGA, whereas registers with an initial value of 0 do not (multi-bit registers are simply built up from multiple single bit registers). For this reason, a domain with [`Unknown`](https://hackage-content.haskell.org/package/clash-prelude/docs/Clash-Signal.html#t:InitBehavior) initial values results in more optimal resource usage, but these designs might not start in their reset state after programming and pressing the reset button on the board after programming might be needed to properly initialize the design. For serious designs, it could make sense to choose a domain with `Unknown` initial values.
-
 # Change the license
 By default `{{name}}.cabal` sets its `license` field to `BSD-2-Clause`. You might want to change this.
 
@@ -286,11 +281,6 @@ main = getArgs >>= defaultMain . ("--interactive":)
 
 {-# START_FILE build.cfg #-}
 ###############################################################################
-# Copyright   : Copyright © 2024 QBayLogic B.V.
-# License     : MIT
-# Maintainer  : QBayLogic B.V.
-# Stability   : experimental
-# Portability : POSIX
 #
 # Required tooling for targeting the OrangeCrab r0.2.1 in combination with
 # the Pmod/Debug Expander board. Don't modify this file directly. Instead,
@@ -325,37 +315,6 @@ tests: True
 
 write-ghc-environment-files: always
 
-
-{-# START_FILE flake.nix #-}
-{
-  description = "A flake enabling tooling for orangecrab";
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-    ecpprog.url = "github:diegodiv/ecpprog";
-  };
-  outputs = { self, nixpkgs, flake-utils, ecpprog, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = nixpkgs.legacyPackages.${system};
-          inherit (pkgs.haskell.lib) dontCheck doJailbreak markUnbroken;
-          overlay = final: prev: {
-            {{name}} = final.callCabal2nix "{{name}}" ./. { };
-          };
-          myHsPkgs = pkgs.haskell.packages.ghc9101.extend overlay;
-      in
-      {
-        devShells.default = myHsPkgs.shellFor {
-          name = "GHC 9.10.1";
-          packages = p: [ ];
-          inputsFrom = [];
-          nativeBuildInputs =
-            with pkgs; [
-              gnumake yosys nextpnr trellis
-            ] ++ [ecpprog.defaultPackage.${system}]
-          ;
-        };
-      });
-}
 
 {-# START_FILE orangecrab.pcf #-}
 LOCATE COMP "CLK" SITE "A9";
@@ -644,13 +603,6 @@ IOBUF  PORT "ddram_gnd[1]" IO_TYPE=SSTL135_II;
 
 {-# START_FILE src/Blink.hs #-}
 {-|
-Module      : Blink
-Copyright   : Copyright © 2024 QBayLogic B.V.
-License     : MIT
-Maintainer  : QBayLogic B.V.
-Stability   : experimental
-Portability : POSIX
-
 Blinking RGB led.
 -}
 module Blink where
@@ -703,13 +655,6 @@ makeTopEntity 'topEntity
 
 {-# START_FILE src/Orangecrab/Domain.hs #-}
 {-|
-Module      : Domain
-Copyright   : Copyright © 2024 QBayLogic B.V.
-License     : MIT
-Maintainer  : QBayLogic B.V.
-Stability   : experimental
-Portability : POSIX
-
 OrangeCrab / Lattice ECP5-85F specific clock domains.
 -}
 
@@ -729,13 +674,6 @@ createDomain vSystem
 
 {-# START_FILE src/RGB.hs #-}
 {-|
-Module      : RGB
-Copyright   : Copyright © 2024 QBayLogic B.V.
-License     : MIT
-Maintainer  : QBayLogic B.V.
-Stability   : experimental
-Portability : POSIX
-
 RGB led color mixing.
 -}
 {-# LANGUAGE OverloadedRecordDot #-}
@@ -775,7 +713,7 @@ driveRGB desiredColor = mealy drive 0 desiredColor
  where
   drive counter color =
     ( counter + 1
-    , RGB (counter < color.r) (counter < color.g) (counter < color.b)
+    , RGB (counter >= color.r) (counter >= color.g) (counter >= color.b)
     )
 
 {-# START_FILE stack.yaml #-}
