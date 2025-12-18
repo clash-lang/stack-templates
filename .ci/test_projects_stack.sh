@@ -13,11 +13,17 @@ for project in *.hsfiles; do
     # Build and test with Stack
     stack build
     stack test
-    if [[ ${project} != "deca.hsfiles" ]]; then
-        stack run clash -- Example.Project --vhdl
-    else
-        stack run clash -- DECA --vhdl
-    fi
+    case "${project}" in
+        deca.hsfiles)
+            stack run clash -- DECA --vhdl
+            ;;
+        orangecrab.hsfile)
+            stack run clash -- Blink --vhdl
+            ;;
+        *)
+            stack run clash -- Example.Project --vhdl
+            ;;
+    esac
 
     # Clean up
     cd ..
