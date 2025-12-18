@@ -34,11 +34,11 @@ prop_blink = H.property $ do
     output :: [RGB]
     output = C.sample @C.System (blink (C.fromList input))
 
-    -- Drop the 1st clock cycle, which corresponds to RESET, and then take
-    -- the next `numTestCycles` cycles to test (so that we don't try to
+    -- Drop the first two clock cycles, which corresponds to RESET, and then
+    -- take the next `numTestCycles` cycles to test (so that we don't try to
     -- compare two infinite lists, causing the test to hang).
     outputFinite :: [RGB]
-    outputFinite = List.take numTestCycles (List.drop 1 output)
+    outputFinite = List.take numTestCycles (List.drop 2 output)
 
     propertyHolds :: [Bool]
     propertyHolds = List.map numberRgbProperty outputFinite
