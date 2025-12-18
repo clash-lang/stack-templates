@@ -27,7 +27,9 @@ prop_blink = H.property $ do
     input = List.repeat False
 
     numberRgbProperty :: RGB -> Bool
-    numberRgbProperty (RGB r g b) = 1 >= (fromEnum r + fromEnum g + fromEnum b)
+    -- Since the LEDs are active low, we check if each color is active by checking the
+    -- `not` of the corresponding color.
+    numberRgbProperty (RGB r g b) = 1 >= (fromEnum (not r) + fromEnum (not g) + fromEnum (not b))
 
     output :: [RGB]
     output = C.sample @C.System (blink (C.fromList input))
