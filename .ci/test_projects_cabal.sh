@@ -19,7 +19,7 @@ for project in *.hsfiles; do
         deca.hsfiles)
             cabal run clash -- DECA --vhdl
             ;;
-        orangecrab.hsfile)
+        orangecrab.hsfiles)
             cabal run clash -- Blink --vhdl
             ;;
         *)

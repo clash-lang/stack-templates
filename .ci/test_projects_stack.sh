@@ -17,7 +17,7 @@ for project in *.hsfiles; do
         deca.hsfiles)
             stack run clash -- DECA --vhdl
             ;;
-        orangecrab.hsfile)
+        orangecrab.hsfiles)
             stack run clash -- Blink --vhdl
             ;;
         *)
