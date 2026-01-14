@@ -1,0 +1,942 @@
+{-# START_FILE .gitignore #-}
+/_build/
+dist/
+dist-newstyle/
+.stack-work/
+cabal-dev
+*.local
+.ghc.environment.*
+*.o
+*.o-boot
+*.hi
+*.hi-boot
+*.po
+*.po-boot
+*.p_o
+*.p_o-boot
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_o-boot
+*.dyn_hi
+*.dyn_hi-boot
+.virtualenv
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+cabal.config
+*.prof
+*.aux
+*.hp
+*.bin
+*.log
+*.tar.gz
+
+*~
+*.DS_Store
+
+# IntelliJ
+/.idea
+*.iml
+
+# HDL directories often created during development cycle
+/vhdl
+/verilog
+/systemverilog
+
+{-# START_FILE Makefile #-}
+##----------------------------------------------------------------------------##
+#   Project Settings                                                           #
+##----------------------------------------------------------------------------##
+
+NAME = Blink
+TOP = topEntity
+BUILDDIR= _build
+PNR_FLAGS= \
+	--85k \
+	--package CSFBGA285 \
+	--lpf orangecrab.pcf \
+
+-include build.cfg
+-include build.cfg.local
+
+##----------------------------------------------------------------------------##
+#   Build Rules                                                                #
+##----------------------------------------------------------------------------##
+
+default: bitstream
+
+upload: ${BUILDDIR}/03-bitstream/${TOP}.bit
+	${PROG} -S $<
+
+synth: ${BUILDDIR}/02-net/$(TOP).json
+
+netlist: ${BUILDDIR}/03-bitstream/$(TOP).config
+
+bitstream: ${BUILDDIR}/03-bitstream/$(TOP).bit
+
+${BUILDDIR}/03-bitstream/${TOP}.dfu: ${BUILDDIR}/03-bitstream/${TOP}.bit
+	cp -a $< $@
+	${DFUSUFFIX} -v 1209 -p 5af0 -a $@
+
+${BUILDDIR}/03-bitstream/${TOP}.bit: ${BUILDDIR}/03-bitstream/${TOP}.config
+	${PACK} --compress --freq 38.8 --input $< --bit $@
+
+${BUILDDIR}/03-bitstream/$(TOP).config: ${BUILDDIR}/02-net/$(TOP).json
+	mkdir -p ${BUILDDIR}/03-bitstream
+	${PNR} --json $< --textcfg $@ ${PNR_FLAGS}
+
+${BUILDDIR}/02-net/$(TOP).json: ${BUILDDIR}/01-hdl/${TOP}.v
+	mkdir -p ${BUILDDIR}/02-net ${BUILDDIR}/log
+	$(YOSYS) \
+		-l ${BUILDDIR}/log/synth.log \
+		-p 'read_verilog $(dir $^)/*.v; synth_ecp5 -top $(TOP) -json $@'
+
+${BUILDDIR}/01-hdl/${TOP}.v: verilog/${NAME}.${TOP}/${TOP}.v
+	mkdir -p ${BUILDDIR}
+	rm -Rf ${BUILDDIR}/01-hdl
+	cp -a verilog/${NAME}.${TOP} ${BUILDDIR}/01-hdl
+
+##----------------------------------------------------------------------------##
+#   Cleanup                                                                    #
+##----------------------------------------------------------------------------##
+
+clean:
+	rm -Rf ${BUILDDIR}
+
+##----------------------------------------------------------------------------##
+#   Special Targets                                                            #
+##----------------------------------------------------------------------------##
+
+.PHONY: clean upload
+.SECONDARY:
+.SILENT:
+
+{-# START_FILE README.md #-}
+<!-- omit in toc -->
+# OrangeCrab Starter Project
+
+This project contains some demo applications for targeting the [OrangeCrab FPGA r0.2.1](https://orangecrab-fpga.github.io/orangecrab-hardware/docs/r0.2.1) in combination with the OrangeCrab Pmod / Debug Expander board and an [Adafruit FT232H JTAG Debugger](https://learn.adafruit.com/adafruit-ft232h-breakout).
+
+It can to be used as a rapid prototyping template or as a starter for larger project setups.
+
+ Read [Simple Starter Project - Project overview](https://github.com/clash-lang/clash-starters/blob/main/simple/README.md#project-overview) for more information on the various files.
+
+<!-- omit in toc -->
+# Table of Contents
+- [Getting this project](#getting-this-project)
+- [Building and testing this project](#building-and-testing-this-project)
+  - [Stack (Windows, Linux, MacOS) [recommended]](#stack-windows-linux-macos-recommended)
+  - [Cabal (Linux, MacOS)](#cabal-linux-macos)
+  - [REPL](#repl)
+  - [IDE support](#ide-support)
+- [Running the project on the OrangeCrab](#running-the-project-on-the-orangecrab)
+  - [Prerequisites](#prerequisites)
+  - [Build Architecture](#build-architecture)
+  - [Make](#make)
+    - [Configuration](#configuration)
+    - [Usage](#usage)
+  - [Demo Application](#demo-application)
+    - [Blink](#blink)
+- [Change the license](#change-the-license)
+
+# Getting this project
+Stack users can run `stack new my-clash-project clash-lang/orangecrab`. Cabal users can [download a zip](https://raw.githubusercontent.com/clash-lang/clash-starters/main/orangecrab.zip) containing the project.
+
+# Building and testing this project
+There's a number of ways to build this project on your machine. The recommended way of doing so is using _Stack_, whose instructions will follow directly after this section.
+
+## Stack (Windows, Linux, MacOS) [recommended]
+Install Stack using your package manager or refer to the [How to install](https://docs.haskellstack.org/en/stable/README/#how-to-install) section of the [Stack manual](https://docs.haskellstack.org/en/stable/README/).
+
+Build the project with:
+
+```bash
+stack build
+```
+
+To run the tests defined in `tests/`, use:
+
+```bash
+stack test
+```
+
+To compile the project to Verilog, run:
+
+```bash
+stack run clash -- Blink --verilog
+```
+
+You can find the HDL files in `verilog/`. The source can be found in `src/Blink.hs`.
+
+## Cabal (Linux, MacOS)
+**The following instructions only work for Cabal >=3.0 and GHC >=8.4.**
+
+First, update your cabal package database:
+
+```bash
+cabal update
+```
+
+You only have to run the update command once. After that, you can keep rebuilding your project by running the build command:
+
+```bash
+cabal build
+```
+
+To run the tests defined in `tests/`, use:
+
+```bash
+cabal run test-library
+cabal run doctests
+```
+
+To compile the project to Verilog, run:
+
+```bash
+cabal run clash -- Blink --verilog
+```
+
+You can find the HDL files in `verilog/`. The source can be found in `src/Blink.hs`.
+
+## REPL
+Clash offers a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) as a quick way to try things, similar to Python's `python` or Ruby's `irb`. Stack users can open the REPL by invoking:
+
+```
+stack run clashi
+```
+
+Cabal users use:
+
+```
+cabal run clashi
+```
+
+## IDE support
+We currently recommend Visual Studio Code in combination with the _Haskell_ plugin. All you need to do is open this folder in VSCode; it will prompt you to install the plugin.
+
+# Running the project on the OrangeCrab
+
+## Prerequisites
+The project requires `yosys`, `nextpnr`, and `prjtrellis`. You will need to install them (they are all part of [the releases of the nightly builds of OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build/releases)).
+
+## Build Architecture
+
+The setup uses a combination of the Clash stage documented above and `make`, where
+* Clash and GHC are used to compile your project and generate Verilog files, and
+* `make` is used to run RTL synthesis, Place and Route, and to program the FPGA.
+
+## Make
+
+A straightforward [`Makefile`](Makefile) is used to handle any additional calls which are not covered by the cabal build system yet.
+
+### Configuration
+
+The `Makefile` includes the additional configuration file [`build.cfg`](build.cfg), which can be used to link all of the required external build tools. To this end, simply copy the file to `build.cfg.local` on your local machine and modify it towards your personal needs. Any changes made to the copy will be preferred in comparison to original `build.cfg`. Just leave out the overrides, if you like to stick with the defaults instead.
+
+Some references on where to get all of the required external tooling are also given as part of the configuration file.
+
+The particular module that contains the top entity can be configured via overriding the `NAME` parameter in the `build.cfg.local`. Just set it to the name of the file in the `src` directory that shall be built (without the `.hs` ending). See the `Makefile` for the pre-configured default. Similarly, the `TOP` parameter configures the name of the top entity in that module. This is either `topEntity` or a function annotated with a [`Synthesize`](https://hackage-content.haskell.org/package/clash-prelude/docs/Clash-Annotations-TopEntity.html#t:TopEntity) annotation. Please note that the `Makefile` does not support Clash designs with multiple `Synthesize` annotations in the same design. Put differently, the top entity cannot (directly or transitively) depend upon a function containing a `Synthesize` annotation. Also, the `t_name` parameter of a `Synthesize` annotation needs to have the same value as the actual name of the function it annotates.
+
+### Usage
+
+The `Makefile` offers the following targets (to be invoked via `make TARGET`) where each command depends on the output generated by all of the former ones according to the order of the list below. The `bitstream` target is the `make` default.
+
+| TARGET      | Description                                         |
+| ----------- | --------------------------------------------------- |
+| `synth`     | runs RTL synthesis                                  |
+| `netlist`   | runs Place and Route                                |
+| `bitstream` | generates a bitstream to be transferred to the FPGA |
+| `upload`    | copies the generated bitstream to FPGA              |
+
+The output of each target is stored in a corresponding sub-directory within an automatically created `_build` folder. The `synth` step also copies the needed HDL files from the `verilog/` dir that was created by Clash into a directory named `01-hdl`. Use `make clean`, if you like to rebuild everything in the `_build` folder from scratch (`make clean` does **not** run `stack/cabal clean`).
+
+## Demo Application
+
+### Blink
+
+Simple blinking example using the RGB LED on the OrangeCrab r0.2.1 board. Running `make upload` should flash the OrangeCrab with the example.
+
+# Change the license
+By default `{{name}}.cabal` sets its `license` field to `BSD-2-Clause`. You might want to change this.
+
+{-# START_FILE bin/Clash.hs #-}
+
+import Prelude
+import System.Environment (getArgs)
+import Clash.Main (defaultMain)
+
+main :: IO ()
+main = getArgs >>= defaultMain
+
+{-# START_FILE bin/Clashi.hs #-}
+
+import Prelude
+import System.Environment (getArgs)
+import Clash.Main (defaultMain)
+
+main :: IO ()
+main = getArgs >>= defaultMain . ("--interactive":)
+
+{-# START_FILE build.cfg #-}
+###############################################################################
+#
+# Required tooling for targeting the OrangeCrab r0.2.1 in combination with
+# the Pmod/Debug Expander board. Don't modify this file directly. Instead,
+# copy it to `build.cfg.local` and introduce any required changes there.
+###############################################################################
+
+CFG_PATH:=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
+###############################################################################
+# https://github.com/cliffordwolf/yosys
+YOSYS=yosys
+
+# https://github.com/YosysHQ/nextpnr
+PNR=nextpnr-ecp5
+
+# https://prjtrellis.readthedocs.io
+PACK=ecppack
+
+# https://github.com/gregdavill/ecpprog
+PROG=ecpprog
+
+# https://dfu-util.sourceforge.net (optional)
+DFUSUFFIX=dfu-suffix
+
+###############################################################################
+
+{-# START_FILE cabal.project #-}
+packages:
+  {{name}}.cabal
+
+tests: True
+
+write-ghc-environment-files: always
+
+
+{-# START_FILE orangecrab.pcf #-}
+LOCATE COMP "CLK" SITE "A9";
+IOBUF  PORT "CLK" IO_TYPE=LVCMOS33;
+FREQUENCY PORT "CLK" 48.0 MHz;
+
+LOCATE COMP "RST" SITE "V17";
+IOBUF  PORT "RST" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "rgb_led0_r" SITE "K4";
+IOBUF  PORT "rgb_led0_r" IO_TYPE=LVCMOS33;
+LOCATE COMP "rgb_led0_g" SITE "M3";
+IOBUF  PORT "rgb_led0_g" IO_TYPE=LVCMOS33;
+LOCATE COMP "rgb_led0_b" SITE "J3";
+IOBUF  PORT "rgb_led0_b" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "PMOD1_4" SITE "B8";
+IOBUF PORT  "PMOD1_4" IO_TYPE=LVCMOS33;
+IOBUF PORT  "PMOD1_4" PULLMODE=DOWN;
+LOCATE COMP "PMOD1_5" SITE "C8";
+IOBUF PORT  "PMOD1_5" IO_TYPE=LVCMOS33;
+IOBUF PORT  "PMOD1_5" PULLMODE=DOWN;
+LOCATE COMP "PMOD1_6" SITE "A8";
+IOBUF PORT  "PMOD1_6" IO_TYPE=LVCMOS33;
+IOBUF PORT  "PMOD1_6" PULLMODE=DOWN;
+LOCATE COMP "PMOD1_7" SITE "H2";
+IOBUF PORT  "PMOD1_7" IO_TYPE=LVCMOS33;
+IOBUF PORT  "PMOD1_7" PULLMODE=DOWN;
+
+LOCATE COMP "PMOD2_0" SITE "N16";
+IOBUF  PORT "PMOD2_0" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_0" PULLMODE=DOWN;
+LOCATE COMP "PMOD2_1" SITE "M18";
+IOBUF  PORT "PMOD2_1" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_1" PULLMODE=DOWN;
+LOCATE COMP "PMOD2_2" SITE "C9";
+IOBUF  PORT "PMOD2_2" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_2" PULLMODE=DOWN;
+LOCATE COMP "PMOD2_3" SITE "C10";
+IOBUF  PORT "PMOD2_3" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_3" PULLMODE=DOWN;
+LOCATE COMP "PMOD2_4" SITE "N15";
+IOBUF  PORT "PMOD2_4" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_4" PULLMODE=DOWN;
+LOCATE COMP "PMOD2_5" SITE "N17";
+IOBUF  PORT "PMOD2_5" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_5" PULLMODE=DOWN;
+LOCATE COMP "PMOD2_6" SITE "B9";
+IOBUF  PORT "PMOD2_6" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_6" PULLMODE=DOWN;
+LOCATE COMP "PMOD2_7" SITE "B10";
+IOBUF  PORT "PMOD2_7" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD2_7" PULLMODE=DOWN;
+
+LOCATE COMP "PMOD3_0" SITE "L4";
+IOBUF  PORT "PMOD3_0" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_0" PULLMODE=DOWN;
+LOCATE COMP "PMOD3_1" SITE "N4";
+IOBUF  PORT "PMOD3_1" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_1" PULLMODE=DOWN;
+LOCATE COMP "PMOD3_2" SITE "G4";
+IOBUF  PORT "PMOD3_2" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_2" PULLMODE=DOWN;
+LOCATE COMP "PMOD3_3" SITE "T17";
+IOBUF  PORT "PMOD3_3" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_3" PULLMODE=DOWN;
+LOCATE COMP "PMOD3_4" SITE "J2";
+IOBUF  PORT "PMOD3_4" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_4" PULLMODE=DOWN;
+LOCATE COMP "PMOD3_5" SITE "N3";
+IOBUF  PORT "PMOD3_5" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_5" PULLMODE=DOWN;
+LOCATE COMP "PMOD3_6" SITE "H4";
+IOBUF  PORT "PMOD3_6" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_6" PULLMODE=DOWN;
+LOCATE COMP "PMOD3_7" SITE "R17";
+IOBUF  PORT "PMOD3_7" IO_TYPE=LVCMOS33;
+IOBUF  PORT "PMOD3_7" PULLMODE=DOWN;
+
+LOCATE COMP "BTN" SITE "J17";
+IOBUF  PORT "BTN" IO_TYPE=SSTL135_I;
+
+LOCATE COMP "spiflash4x_cs_n" SITE "U17";
+IOBUF  PORT "spiflash4x_cs_n" IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash4x_dq[0]" SITE "U18";
+IOBUF  PORT "spiflash4x_dq[0]" IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash4x_dq[1]" SITE "T18";
+IOBUF  PORT "spiflash4x_dq[1]" IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash4x_dq[2]" SITE "R18";
+IOBUF  PORT "spiflash4x_dq[2]" IO_TYPE=LVCMOS33;
+LOCATE COMP "spiflash4x_dq[3]" SITE "N18";
+IOBUF  PORT "spiflash4x_dq[3]" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "usb_d_p" SITE "N1";
+IOBUF  PORT "usb_d_p" IO_TYPE=LVCMOS33;
+LOCATE COMP "usb_d_n" SITE "M2";
+IOBUF  PORT "usb_d_n" IO_TYPE=LVCMOS33;
+LOCATE COMP "usb_pullup" SITE "N2";
+IOBUF  PORT "usb_pullup" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "ddram_a[0]" SITE "C4";
+IOBUF  PORT "ddram_a[0]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[0]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[1]" SITE "D2";
+IOBUF  PORT "ddram_a[1]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[1]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[2]" SITE "D3";
+IOBUF  PORT "ddram_a[2]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[2]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[3]" SITE "A3";
+IOBUF  PORT "ddram_a[3]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[3]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[4]" SITE "A4";
+IOBUF  PORT "ddram_a[4]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[4]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[5]" SITE "D4";
+IOBUF  PORT "ddram_a[5]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[5]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[6]" SITE "C3";
+IOBUF  PORT "ddram_a[6]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[6]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[7]" SITE "B2";
+IOBUF  PORT "ddram_a[7]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[7]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[8]" SITE "B1";
+IOBUF  PORT "ddram_a[8]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[8]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[9]" SITE "D1";
+IOBUF  PORT "ddram_a[9]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[9]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[10]" SITE "A7";
+IOBUF  PORT "ddram_a[10]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[10]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[11]" SITE "C2";
+IOBUF  PORT "ddram_a[11]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[11]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[12]" SITE "B6";
+IOBUF  PORT "ddram_a[12]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[12]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[13]" SITE "C1";
+IOBUF  PORT "ddram_a[13]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[13]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[14]" SITE "A2";
+IOBUF  PORT "ddram_a[14]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[14]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_a[15]" SITE "C7";
+IOBUF  PORT "ddram_a[15]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_a[15]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_ba[0]" SITE "D6";
+IOBUF  PORT "ddram_ba[0]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_ba[0]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_ba[1]" SITE "B7";
+IOBUF  PORT "ddram_ba[1]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_ba[1]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_ba[2]" SITE "A6";
+IOBUF  PORT "ddram_ba[2]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_ba[2]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_ras_n" SITE "C12";
+IOBUF  PORT "ddram_ras_n" SLEWRATE=FAST;
+IOBUF  PORT "ddram_ras_n" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_cas_n" SITE "D13";
+IOBUF  PORT "ddram_cas_n" SLEWRATE=FAST;
+IOBUF  PORT "ddram_cas_n" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_we_n" SITE "B12";
+IOBUF  PORT "ddram_we_n" SLEWRATE=FAST;
+IOBUF  PORT "ddram_we_n" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_cs_n" SITE "A12";
+IOBUF  PORT "ddram_cs_n" SLEWRATE=FAST;
+IOBUF  PORT "ddram_cs_n" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_dm[0]" SITE "D16";
+IOBUF  PORT "ddram_dm[0]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dm[0]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_dm[1]" SITE "G16";
+IOBUF  PORT "ddram_dm[1]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dm[1]" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_dq[0]" SITE "C17";
+IOBUF  PORT "ddram_dq[0]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[0]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[0]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[1]" SITE "D15";
+IOBUF  PORT "ddram_dq[1]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[1]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[1]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[2]" SITE "B17";
+IOBUF  PORT "ddram_dq[2]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[2]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[2]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[3]" SITE "C16";
+IOBUF  PORT "ddram_dq[3]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[3]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[3]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[4]" SITE "A15";
+IOBUF  PORT "ddram_dq[4]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[4]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[4]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[5]" SITE "B13";
+IOBUF  PORT "ddram_dq[5]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[5]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[5]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[6]" SITE "A17";
+IOBUF  PORT "ddram_dq[6]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[6]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[6]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[7]" SITE "A13";
+IOBUF  PORT "ddram_dq[7]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[7]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[7]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[8]" SITE "F17";
+IOBUF  PORT "ddram_dq[8]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[8]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[8]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[9]" SITE "F16";
+IOBUF  PORT "ddram_dq[9]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[9]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[9]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[10]" SITE "G15";
+IOBUF  PORT "ddram_dq[10]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[10]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[10]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[11]" SITE "F15";
+IOBUF  PORT "ddram_dq[11]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[11]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[11]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[12]" SITE "J16";
+IOBUF  PORT "ddram_dq[12]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[12]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[12]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[13]" SITE "C18";
+IOBUF  PORT "ddram_dq[13]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[13]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[13]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[14]" SITE "H16";
+IOBUF  PORT "ddram_dq[14]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[14]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[14]" TERMINATION=OFF;
+LOCATE COMP "ddram_dq[15]" SITE "F18";
+IOBUF  PORT "ddram_dq[15]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dq[15]" IO_TYPE=SSTL135_I;
+IOBUF  PORT "ddram_dq[15]" TERMINATION=OFF;
+LOCATE COMP "ddram_dqs_p[0]" SITE "B15";
+IOBUF  PORT "ddram_dqs_p[0]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dqs_p[0]" IO_TYPE=SSTL135D_I;
+IOBUF  PORT "ddram_dqs_p[0]" TERMINATION=OFF;
+IOBUF  PORT "ddram_dqs_p[0]" DIFFRESISTOR=100;
+LOCATE COMP "ddram_dqs_p[1]" SITE "G18";
+IOBUF  PORT "ddram_dqs_p[1]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_dqs_p[1]" IO_TYPE=SSTL135D_I;
+IOBUF  PORT "ddram_dqs_p[1]" TERMINATION=OFF;
+IOBUF  PORT "ddram_dqs_p[1]" DIFFRESISTOR=100;
+LOCATE COMP "ddram_clk_p" SITE "J18";
+IOBUF  PORT "ddram_clk_p" SLEWRATE=FAST;
+IOBUF  PORT "ddram_clk_p" IO_TYPE=SSTL135D_I;
+LOCATE COMP "ddram_cke" SITE "D18";
+IOBUF  PORT "ddram_cke" SLEWRATE=FAST;
+IOBUF  PORT "ddram_cke" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_odt" SITE "C13";
+IOBUF  PORT "ddram_odt" SLEWRATE=FAST;
+IOBUF  PORT "ddram_odt" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_reset_n" SITE "L18";
+IOBUF  PORT "ddram_reset_n" SLEWRATE=FAST;
+IOBUF  PORT "ddram_reset_n" IO_TYPE=SSTL135_I;
+LOCATE COMP "ddram_vccio[0]" SITE "K16";
+IOBUF  PORT "ddram_vccio[0]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_vccio[0]" IO_TYPE=SSTL135_II;
+LOCATE COMP "ddram_vccio[1]" SITE "D17";
+IOBUF  PORT "ddram_vccio[1]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_vccio[1]" IO_TYPE=SSTL135_II;
+LOCATE COMP "ddram_vccio[2]" SITE "K15";
+IOBUF  PORT "ddram_vccio[2]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_vccio[2]" IO_TYPE=SSTL135_II;
+LOCATE COMP "ddram_vccio[3]" SITE "K17";
+IOBUF  PORT "ddram_vccio[3]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_vccio[3]" IO_TYPE=SSTL135_II;
+LOCATE COMP "ddram_vccio[4]" SITE "B18";
+IOBUF  PORT "ddram_vccio[4]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_vccio[4]" IO_TYPE=SSTL135_II;
+LOCATE COMP "ddram_vccio[5]" SITE "C6";
+IOBUF  PORT "ddram_vccio[5]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_vccio[5]" IO_TYPE=SSTL135_II;
+LOCATE COMP "ddram_gnd[0]" SITE "L15";
+IOBUF  PORT "ddram_gnd[0]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_gnd[0]" IO_TYPE=SSTL135_II;
+LOCATE COMP "ddram_gnd[1]" SITE "L16";
+IOBUF  PORT "ddram_gnd[1]" SLEWRATE=FAST;
+IOBUF  PORT "ddram_gnd[1]" IO_TYPE=SSTL135_II;
+
+{-# START_FILE src/Blink.hs #-}
+{-|
+Blinking RGB led.
+-}
+module Blink where
+
+import Clash.Annotations.TH
+import Clash.Prelude
+
+import Orangecrab.Domain
+import RGB (RGB, Color, red, green, blue, driveRGB)
+
+
+topEntity ::
+  -- | Orangecrab clock pin
+  "CLK" ::: Clock Dom48 ->
+  -- | Builtin orangecrab button
+  "BTN" ::: Reset Dom48 ->
+  -- | Orangecrab pin B8, as defined in the `orangecrab.pcf` file
+  "PMOD1_4" ::: Signal Dom48 Bool ->
+  -- | Builtin orangecrab LED
+  "rgb_led0" ::: Signal Dom48 RGB
+topEntity clk rst btn = withClockResetEnable clk rst enableGen (blink btn)
+
+
+blink ::
+  -- | Constraint hiding the Clock, Reset, and Enable signals
+  HiddenClockResetEnable dom =>
+  -- | Input for whether to pause counter
+  Signal dom Bool ->
+  -- | Output color for LED (as RGB)
+  Signal dom RGB
+blink btn = driveRGB (mealy blinkStep initState btn)
+ where
+  initState = (0 :: Unsigned 26, 0 :: Index 3)
+
+  -- Step function for state machine
+  blinkStep (counter, colorIndex) pauseCounter =
+    ( (newCounter, newColorIndex) -- Next state of state machine
+    , blinkColors !! colorIndex   -- Output of state machine
+    )
+   where
+    newCounter = if pauseCounter then counter else counter + 1
+    newColorIndex = if counter == 0 then satSucc SatWrap colorIndex else colorIndex
+
+  -- Colors to cycle through
+  blinkColors :: Vec 3 Color
+  blinkColors = red :> green :> blue :> Nil
+
+
+makeTopEntity 'topEntity
+
+{-# START_FILE src/Orangecrab/Domain.hs #-}
+{-|
+OrangeCrab / Lattice ECP5-85F specific clock domains.
+-}
+
+{-# LANGUAGE NumericUnderscores #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
+module Orangecrab.Domain where
+
+import Clash.Prelude
+
+-- | 48 MHz oscillator clock of the OrangeCrab board.
+createDomain vSystem
+  { vName = "Dom48"
+  , vPeriod = hzToPeriod 48_000_000
+  , vResetKind = Synchronous
+  , vResetPolarity = ActiveLow
+  }
+
+{-# START_FILE src/RGB.hs #-}
+{-|
+RGB led color mixing.
+-}
+{-# LANGUAGE OverloadedRecordDot #-}
+module RGB where
+
+import Clash.Prelude
+
+-- | Color values.
+data Color =
+  Color
+    { r :: Unsigned 8
+    , g :: Unsigned 8
+    , b :: Unsigned 8
+    }
+  deriving (Generic, NFDataX, BitPack, Eq, Show)
+
+red, green, blue :: Color
+red    = Color 255   0   0
+green  = Color   0 255   0
+blue   = Color   0   0 255
+
+-- | RBG led interface
+data RGB =
+  RGB
+    { rLed :: "r" ::: Bool
+    , gLed :: "g" ::: Bool
+    , bLed :: "b" ::: Bool
+    }
+  deriving (Generic, NFDataX, BitPack)
+
+-- | Mixes color to an RGB led via pulse width modulation.
+driveRGB ::
+  (KnownDomain dom, HiddenClockResetEnable dom) =>
+  Signal dom Color ->
+  Signal dom RGB
+driveRGB desiredColor = mealy drive 0 desiredColor
+ where
+  drive counter color =
+    ( counter + 1
+    , RGB (counter >= color.r) (counter >= color.g) (counter >= color.b)
+    )
+
+{-# START_FILE stack.yaml #-}
+resolver: lts-23.28
+
+extra-deps:
+- clash-ghc-1.8.4@sha256:3f758c59c6024fc8f625e38cf866a4ea5981a38a8f8bfb3288d2123457730049,9866
+- clash-lib-1.8.4@sha256:6d08a798f5e2e4772290d6c480f0e3de4ef3309d737ace37f0a27281433e3adb,15721
+- clash-prelude-1.8.4@sha256:4d1d9b05cc38f6c1e856de3035ee044bfcb7666e6ebeb978aef54da840255a67,17871
+- clash-prelude-hedgehog-1.8.4@sha256:b37d11a21bebcacd193313777eaa5cc1d1d4dbe2b1d800c5050a8b65c27be430,1415
+
+{-# START_FILE tests/Tests/Blink.hs #-}
+module Tests.Blink where
+
+import Prelude
+
+import Test.Tasty
+import Test.Tasty.TH
+import Test.Tasty.Hedgehog
+
+import qualified Clash.Prelude as C
+import qualified Hedgehog as H
+import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
+import qualified Data.List as List
+
+import Blink (blink)
+import RGB (RGB(..))
+
+
+-- Test the property that blink drives at most one of the (r, g, b) leds within
+-- the orangecrab multicolor led at a time.
+prop_blink :: H.Property
+prop_blink = H.property $ do
+  numTestCycles <- H.forAll (Gen.integral (Range.linear 3 500))
+
+  let
+    input :: [Bool]
+    input = List.repeat False
+
+    numberRgbProperty :: RGB -> Bool
+    -- Since the LEDs are active low, we check if each color is active by checking the
+    -- `not` of the corresponding color.
+    numberRgbProperty (RGB r g b) = 1 >= (fromEnum (not r) + fromEnum (not g) + fromEnum (not b))
+
+    output :: [RGB]
+    output = C.sample @C.System (blink (C.fromList input))
+
+    -- Drop the first two clock cycles, which corresponds to RESET, and then
+    -- take the next `numTestCycles` cycles to test (so that we don't try to
+    -- compare two infinite lists, causing the test to hang).
+    outputFinite :: [RGB]
+    outputFinite = List.take numTestCycles (List.drop 2 output)
+
+    propertyHolds :: [Bool]
+    propertyHolds = List.map numberRgbProperty outputFinite
+
+  propertyHolds H.=== List.replicate numTestCycles True
+
+
+blinkTests :: TestTree
+blinkTests = $(testGroupGenerator)
+
+
+main :: IO ()
+main = defaultMain blinkTests
+
+{-# START_FILE tests/doctests.hs #-}
+module Main where
+
+import System.Environment (getArgs)
+import Test.DocTest (mainFromCabal)
+
+main :: IO ()
+main = mainFromCabal "{{ name }}" =<< getArgs
+
+{-# START_FILE tests/unittests.hs #-}
+import Prelude
+
+import Test.Tasty
+
+import qualified Tests.Blink
+
+main :: IO ()
+main = defaultMain $ testGroup "."
+  [ Tests.Blink.blinkTests
+  ]
+
+{-# START_FILE {{name}}.cabal #-}
+cabal-version:       2.4
+name:                {{name}}
+version:             0.1
+license:             BSD-2-Clause
+author:              John Smith <john@example.com>
+maintainer:          John Smith <john@example.com>
+
+common common-options
+  default-extensions:
+    BangPatterns
+    BinaryLiterals
+    ConstraintKinds
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    FlexibleContexts
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    NamedFieldPuns
+    NoStarIsType
+    PolyKinds
+    RankNTypes
+    RecordWildCards
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    ViewPatterns
+
+    -- TemplateHaskell is used to support convenience functions such as
+    -- 'listToVecTH' and 'bLit'.
+    TemplateHaskell
+    QuasiQuotes
+
+    -- Prelude isn't imported by default as Clash offers Clash.Prelude
+    NoImplicitPrelude
+  ghc-options:
+    -Wall -Wcompat
+    -haddock
+
+    -- Plugins to support type-level constraint solving on naturals
+    -fplugin GHC.TypeLits.Extra.Solver
+    -fplugin GHC.TypeLits.Normalise
+    -fplugin GHC.TypeLits.KnownNat.Solver
+
+    -- Clash needs access to the source code in compiled modules
+    -fexpose-all-unfoldings
+
+    -- Worker wrappers introduce unstable names for functions that might have
+    -- blackboxes attached for them. You can disable this, but be sure to add
+    -- a no-specialize pragma to every function with a blackbox.
+    -fno-worker-wrapper
+
+    -- Strict annotations - while sometimes preventing space leaks - trigger
+    -- optimizations Clash can't deal with. See:
+    --
+    --    https://github.com/clash-lang/clash-compiler/issues/2361
+    --
+    -- These flags disables these optimizations. Note that the fields will
+    -- remain strict.
+    -fno-unbox-small-strict-fields
+    -fno-unbox-strict-fields
+  build-depends:
+    base,
+    Cabal,
+
+    -- clash-prelude will set suitable version bounds for the plugins
+    clash-prelude >= 1.8.4 && < 1.10,
+    ghc-typelits-natnormalise,
+    ghc-typelits-extra,
+    ghc-typelits-knownnat
+
+
+library
+  import: common-options
+  hs-source-dirs: src
+  exposed-modules:
+    Blink
+    Orangecrab.Domain
+    RGB
+  default-language: Haskell2010
+
+-- Builds the executable 'clash', with {{name}} project in scope
+executable clash
+  main-is: bin/Clash.hs
+  default-language: Haskell2010
+  Build-Depends: base, clash-ghc, {{name}}
+  if !os(Windows)
+    ghc-options: -dynamic
+
+-- Builds the executable 'clashi', with {{name}} project in scope
+executable clashi
+  main-is: bin/Clashi.hs
+  default-language: Haskell2010
+  if !os(Windows)
+    ghc-options: -dynamic
+  build-depends: base, clash-ghc, {{name}}
+
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          doctests.hs
+  ghc-options:      -Wall -Wcompat -threaded
+  hs-source-dirs:   tests
+  build-depends:
+    base,
+    {{ name }},
+    doctest-parallel >= 0.2 && < 0.4,
+
+test-suite test-library
+  import: common-options
+  default-language: Haskell2010
+  hs-source-dirs: tests
+  type: exitcode-stdio-1.0
+  ghc-options: -threaded
+  main-is: unittests.hs
+  other-modules:
+    Tests.Blink
+  build-depends:
+    {{name}},
+    QuickCheck,
+    clash-prelude-hedgehog,
+    hedgehog,
+    tasty >= 1.2 && < 1.6,
+    tasty-hedgehog,
+    tasty-th
+
