@@ -300,11 +300,11 @@ they specify a GHC version. These snapshots are curated by the community and
 FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-19.32
+resolver: lts-24.34
 ```
 
-This project uses [lts-19.32](https://www.stackage.org/lts-19.32), which
-includes Clash 1.6.4. Snapshots tightly couple GHC and package versions. By
+This project uses [lts-24.34](https://www.stackage.org/lts-24.34) and Clash
+1.8.5. Snapshots tightly couple GHC and package versions. By
 working this way, Stack projects build on a cohesive set of packages. Plus, it
 guarantees that if a `stack build` works now, it will work in 10 years too.
 
