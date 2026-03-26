@@ -248,7 +248,7 @@ test-suite doctests
   build-depends:
     base,
     {{ name }},
-    doctest-parallel >= 0.2 && < 0.4,
+    doctest-parallel >= 0.2 && < 0.5,
 ```
 
 Last but not least, another testsuite stanza is defined:
