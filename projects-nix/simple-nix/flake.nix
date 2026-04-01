@@ -19,7 +19,7 @@
 
         # What version of GHC you want to use
         # The version must be in the list of supported versions of the clash-compiler!
-        ghc-version = "ghc9101";
+        ghc-version = "ghc9103";
 
         # A list of HASKELL packages clash-compiler uses, we use this set packages to prevent version
         # conflicts with the regular nixpkgs when using Clash
