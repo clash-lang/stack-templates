@@ -2,7 +2,7 @@
   description = "A flake for starter Clash projects!";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    clash-compiler.url = "github:clash-lang/clash-compiler?ref=v1.8.4";
+    clash-compiler.url = "github:clash-lang/clash-compiler?ref=v1.8.5";
   };
   nixConfig = {
     extra-substituters = [ "https://clash-lang.cachix.org" ];
@@ -19,7 +19,7 @@
 
         # What version of GHC you want to use
         # The version must be in the list of supported versions of the clash-compiler!
-        ghc-version = "ghc9101";
+        ghc-version = "ghc9103";
 
         # A list of HASKELL packages clash-compiler uses, we use this set packages to prevent version
         # conflicts with the regular nixpkgs when using Clash

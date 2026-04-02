@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {- stack script
- --resolver lts-19.32
+ --resolver lts-24.34
  --install-ghc
  --package bytestring
  --package directory
@@ -10,13 +10,13 @@
  --ghc-options -Wall
 -}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 
 -- base
 import Control.Monad
 import Data.List (sort)
 import GHC.Stack
-import System.Environment
 
 -- bytestring
 import Data.ByteString (ByteString)
@@ -61,9 +61,7 @@ mkStackTemplate projectDir = do
 -- | Read files in project/ and collect them into .hsfiles
 main :: HasCallStack => IO ()
 main = do
-  scriptDir <- dropFileName <$> getEnv "_"
-  cwd <- getCurrentDirectory
-  here <- makeAbsolute (cwd </> scriptDir)
+  let here = dropFileName __FILE__
   setCurrentDirectory here
 
   let projectsDir = here </> "projects"

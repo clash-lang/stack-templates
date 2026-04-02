@@ -181,7 +181,7 @@ test-suite doctests
   build-depends:
     base,
     {{ name }},
-    doctest-parallel >= 0.2 && < 0.4,
+    doctest-parallel >= 0.2 && < 0.5,
 ```
 
 Last but not least, another testsuite stanza is defined:
@@ -223,11 +223,11 @@ write-ghc-environment-files: always
 While Cabal fetches packages straight from Hackage (with a bias towards the latest versions), Stack works through _snapshots_. Snapshots are an index of packages from Hackage know to work well with each other. In addition to that, they specify a GHC version. These snapshots are curated by the community and FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-19.32
+resolver: lts-24.34
 ```
 
-This project uses [lts-19.32](https://www.stackage.org/lts-19.32), which
-includes Clash 1.6.4. Snapshots tightly couple GHC and package versions. By
+This project uses [lts-24.34](https://www.stackage.org/lts-24.34) and Clash
+1.8.5. Snapshots tightly couple GHC and package versions. By
 working this way, Stack projects build on a cohesive set of packages. Plus, it
 guarantees that if a `stack build` works now, it will work in 10 years too.
 
