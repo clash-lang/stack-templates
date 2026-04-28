@@ -13,7 +13,9 @@ data LedMode
   deriving (Show, Eq, Enum, Generic, NFDataX)
 
 -- Define a synthesis domain with a clock with a period of 20000 /ps/.
-createDomain vSystem{vName="Input", vPeriod=20000}
+-- The signal coming from the reset button is low when pressed, and high when
+-- not pressed, which means we set the reset polarity to active-low.
+createDomain vSystem{vName="Input", vPeriod=20000, vResetPolarity=ActiveLow}
 
 -- Define a synthesis domain with a clock with a period of 50000 /ps/.
 createDomain vSystem{vName="Dom50", vPeriod=50000}
@@ -35,7 +37,7 @@ deca
   --
   -- Annotate with attributes to map the argument to the correct pin, with the
   -- correct voltage settings, on the DECA development kit.
-  -> Signal Input Bool
+  -> Reset Input
       `Annotate` 'StringAttr "chip_pin" "H21"
       `Annotate` 'StringAttr "altera_attribute" "-name IO_STANDARD \"1.5 V Schmitt Trigger\""
   -- ^ Reset signal, straight from KEY0
@@ -64,28 +66,12 @@ deca clk20 rstBtn modeBtn =
   -- Start with the first LED turned on, in rotate mode, with the counter on zero
   initialStateBlinkerT = (1, Rotate, 0)
 
-  -- Signal coming from the reset button is low when pressed, and high when
-  -- not pressed. We convert this signal to the polarity of our domain with
-  -- 'unsafeFromLowPolarity'.
-  rst = unsafeFromLowPolarity rstBtn
-
   -- Instantiate a PLL: this stabilizes the incoming clock signal and indicates
   -- when the signal is stable. We're also using it to transform an incoming
   -- clock signal running at 20 MHz to a clock signal running at 50 MHz.
-  (clk50, pllStable) =
-    altpll
-      @Dom50
-      (SSymbol @"altpll50")
-      clk20
-      rst
-
-  -- Synchronize reset to clock signal coming from PLL. We want the reset to
-  -- remain active while the PLL is NOT stable, hence the conversion with
-  -- 'unsafeFromLowPolarity'
-  rstSync =
-    resetSynchronizer
-      clk50
-      (unsafeFromLowPolarity pllStable)
+  ( clk50 :: Clock Dom50
+    , rstSync :: Reset Dom50
+    ) = altpllSync clk20 rstBtn
 
 -- | Changes the LED mode
 --
