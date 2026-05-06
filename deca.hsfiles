@@ -370,11 +370,11 @@ they specify a GHC version. These snapshots are curated by the community and
 FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-24.34
+resolver: lts-24.38
 ```
 
-This project uses [lts-24.34](https://www.stackage.org/lts-24.34) and Clash
-1.8.5. Snapshots tightly couple GHC and package versions. By
+This project uses [lts-24.38](https://www.stackage.org/lts-24.38) and Clash
+1.10.0. Snapshots tightly couple GHC and package versions. By
 working this way, Stack projects build on a cohesive set of packages. Plus, it
 guarantees that if a `stack build` works now, it will work in 10 years too.
 
@@ -491,11 +491,13 @@ data LedMode
   -- ^ After some period, turn on all disable LEDs, and vice versa
   deriving (Show, Eq, Enum, Generic, NFDataX)
 
--- Define a synthesis domain with a clock with a period of 20000 /ps/.
-createDomain vSystem{vName="Input", vPeriod=20000}
+-- Define a synthesis domain with a clock with a frequency of 50 MHz.
+-- The signal coming from the reset button is low when pressed, and high when
+-- not pressed, which means we set the reset polarity to active-low.
+createDomain vSystem{vName="Input", vPeriod=hzToPeriod 50e6, vResetPolarity=ActiveLow}
 
--- Define a synthesis domain with a clock with a period of 50000 /ps/.
-createDomain vSystem{vName="Dom50", vPeriod=50000}
+-- Define a synthesis domain with a clock with a frequency of 40 MHz.
+createDomain vSystem{vName="Dom40", vPeriod=hzToPeriod 40e6}
 
 {-# ANN deca
   (Synthesize
@@ -514,25 +516,25 @@ deca
   --
   -- Annotate with attributes to map the argument to the correct pin, with the
   -- correct voltage settings, on the DECA development kit.
-  -> Signal Input Bool
+  -> Reset Input
       `Annotate` 'StringAttr "chip_pin" "H21"
       `Annotate` 'StringAttr "altera_attribute" "-name IO_STANDARD \"1.5 V Schmitt Trigger\""
   -- ^ Reset signal, straight from KEY0
-  -> Signal Dom50 Bit
+  -> Signal Dom40 Bit
       `Annotate` 'StringAttr "chip_pin" "H22"
       `Annotate` 'StringAttr "altera_attribute" "-name IO_STANDARD \"1.5 V Schmitt Trigger\""
   -- ^ Mode choice, straight from KEY1. See 'LedMode'.
-  -> Signal Dom50 (BitVector 8)
+  -> Signal Dom40 (BitVector 8)
       `Annotate` 'StringAttr "chip_pin" "C5, B4, A5, C4, B7, A6, C8, C7"
       `Annotate` 'StringAttr "altera_attribute" "-name IO_STANDARD \"1.2 V\""
   -- ^ Output containing 8 bits, corresponding to 8 LEDs, LEDs are active-low
   --
   -- Use comma-seperated list in the "chip_pin" attribute to maps the individual
   -- bits of the result to the correct pins on the DECA development kit
-deca clk20 rstBtn modeBtn =
+deca clk50 rstBtn modeBtn =
   exposeClockResetEnable
     (mealy blinkerT initialStateBlinkerT . isRising 1)
-    clk50
+    clk40
     rstSync
     en
     modeBtn
@@ -543,28 +545,12 @@ deca clk20 rstBtn modeBtn =
   -- Start with the first LED turned on, in rotate mode, with the counter on zero
   initialStateBlinkerT = (1, Rotate, 0)
 
-  -- Signal coming from the reset button is low when pressed, and high when
-  -- not pressed. We convert this signal to the polarity of our domain with
-  -- 'unsafeFromLowPolarity'.
-  rst = unsafeFromLowPolarity rstBtn
-
   -- Instantiate a PLL: this stabilizes the incoming clock signal and indicates
   -- when the signal is stable. We're also using it to transform an incoming
-  -- clock signal running at 20 MHz to a clock signal running at 50 MHz.
-  (clk50, pllStable) =
-    altpll
-      @Dom50
-      (SSymbol @"altpll50")
-      clk20
-      rst
-
-  -- Synchronize reset to clock signal coming from PLL. We want the reset to
-  -- remain active while the PLL is NOT stable, hence the conversion with
-  -- 'unsafeFromLowPolarity'
-  rstSync =
-    resetSynchronizer
-      clk50
-      (unsafeFromLowPolarity pllStable)
+  -- clock signal running at 50 MHz to a clock signal running at 40 MHz.
+  ( clk40 :: Clock Dom40
+    , rstSync :: Reset Dom40
+    ) = altpllSync clk50 rstBtn
 
 -- | Changes the LED mode
 --
@@ -577,14 +563,14 @@ flipMode Rotate = Complement
 flipMode Complement = Rotate
 
 blinkerT
-  :: (BitVector 8, LedMode, Index 6660000)
+  :: (BitVector 8, LedMode, Index 13320000)
   -> Bool
-  -> ((BitVector 8, LedMode, Index 6660000), BitVector 8)
+  -> ((BitVector 8, LedMode, Index 13320000), BitVector 8)
 blinkerT (leds, mode, cntr) key1R = ((leds', mode', cntr'), complement leds)
   where
-    -- clock frequency = 20e6  (20 MHz)
+    -- clock frequency = 40e6  (40 MHz)
     -- led update rate = 333e-3 (every 333ms)
-    cnt_max = maxBound :: Index 6660000 -- 20e6 * 333e-3
+    cnt_max = maxBound :: Index 13320000 -- 40e6 * 333e-3
 
     cntr' | cntr == cnt_max = 0
           | otherwise       = cntr + 1
@@ -599,13 +585,17 @@ blinkerT (leds, mode, cntr) key1R = ((leds', mode', cntr'), complement leds)
           | otherwise = leds
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-24.34
+resolver: lts-24.38
 
 extra-deps:
-- clash-ghc-1.8.5@sha256:c610cd73934f662f345fc63220806bc8064359bcccbea5cb88e965988b0be06f,9867
-- clash-lib-1.8.5@sha256:7ecc42f90c8024077a60fea6fc2bb077d111382430b10495ff8f2feb6db4bbed,15721
-- clash-prelude-1.8.5@sha256:5fb27b119ee7e378bdea0dfe4a4175b13ca72f5b63bd3d31bc3928ea940415fc,17995
-- clash-prelude-hedgehog-1.8.5@sha256:7c0fb51609f844a5faf75ecc71fa1aa0b924299c1e3c06a95257124562be56cc,1416
+- clash-ghc-1.10.0@sha256:d196fd5454e119fa86a2d28736081abb1f176317e80f70972ad6ae96b957af3a,9152
+- clash-lib-1.10.0@sha256:3d512d1d8270586415e35d1eff3a47233978cf106d7909f064f100702a22c167,15776
+- clash-prelude-1.10.0@sha256:69daccb6c9066bac22846e59fc34a3335181c7b3d946715d2cb3204e42391d92,18110
+- clash-prelude-hedgehog-1.10.0@sha256:8d9738c12ce9742647dff05e807e069cc9cbc8c8831da5ea3899ee71932bc378,1615
+- ghc-typelits-extra-0.5.3@sha256:4fae3c698c15132181a431e52f95aa8f655dc78bcd2a5fdf35a7e222eb7d2d19,5830
+- ghc-typelits-knownnat-0.8.3@sha256:84114e2d8a4389c37921ed1b3dd030c6acd8af0eb47d5cb516e3a374ade0f9b4,5993
+- ghc-typelits-natnormalise-0.9.5@sha256:692d7a936ecee9e3a994f0a60d136be1f03137d38aca90f03b8efcb40bed90ca,3973
+- ghc-tcplugin-api-0.18.2.1@sha256:a5e1e7019f94203508a9a398cf1210ec813d2e11a880d325b0259985dbf7b02a,5426
 
 {-# START_FILE syn/addclashsources.tcl #-}
 package require json
@@ -841,7 +831,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.8.5 && < 1.10,
+    clash-prelude >= 1.10.0 && < 1.12,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat

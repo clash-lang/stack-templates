@@ -4,23 +4,23 @@
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
-        "ghc-tcplugins-extra": "ghc-tcplugins-extra",
+        "ghc-tcplugin-api": "ghc-tcplugin-api",
         "ghc-typelits-extra": "ghc-typelits-extra",
         "ghc-typelits-knownnat": "ghc-typelits-knownnat",
         "ghc-typelits-natnormalise": "ghc-typelits-natnormalise",
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1774438862,
-        "narHash": "sha256-Cu3wLBtIahUuBI5N1WerU3aMBZyVqPzn18GjCaU7lHw=",
+        "lastModified": 1776952304,
+        "narHash": "sha256-n1si+4jq08gn5FfWeZDO0QM2EcKf11VUFFKQPhhqJWs=",
         "owner": "clash-lang",
         "repo": "clash-compiler",
-        "rev": "50ec44fc22825acbf65bf0b2eb878eeae4121cdb",
+        "rev": "2371b8708bd4474e6ac0e5988fd7e68b17bf1f69",
         "type": "github"
       },
       "original": {
         "owner": "clash-lang",
-        "ref": "v1.8.5",
+        "ref": "v1.10.0",
         "repo": "clash-compiler",
         "type": "github"
       }
@@ -76,7 +76,7 @@
         "type": "indirect"
       }
     },
-    "ghc-tcplugins-extra": {
+    "ghc-tcplugin-api": {
       "flake": false,
       "locked": {
         "lastModified": 1768388673,
@@ -87,8 +87,8 @@
         "type": "github"
       },
       "original": {
-        "owner": "clash-lang",
-        "repo": "ghc-tcplugins-extra",
+        "owner": "sheaf",
+        "repo": "ghc-tcplugin-api",
         "type": "github"
       }
     },
@@ -142,11 +142,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1773628058,
-        "narHash": "sha256-hpXH0z3K9xv0fHaje136KY872VT2T5uwxtezlAskQgY=",
+        "lastModified": 1775888245,
+        "narHash": "sha256-nwASzrRDD1JBEu/o8ekKYEXm/oJW6EMCzCRdrwcLe90=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f8573b9c935cfaa162dd62cc9e75ae2db86f85df",
+        "rev": "13043924aaa7375ce482ebe2494338e058282925",
         "type": "github"
       },
       "original": {
@@ -158,11 +158,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1775005781,
-        "narHash": "sha256-HIihgifyfrmBlC2c9B7+bqP1fF5eHPNCNhgBd1coFcs=",
+        "lastModified": 1777395829,
+        "narHash": "sha256-HposVFZcsBCevgqLR73w/BpSe8J1lMgw5kASnnxO3A4=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "62e3050a29278c985725a86704faa1e99236b51a",
+        "rev": "e75f25705c2934955ee5075e62530d74aca973c6",
         "type": "github"
       },
       "original": {
