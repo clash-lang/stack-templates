@@ -666,6 +666,9 @@ executable clash
   main-is: bin/Clash.hs
   default-language: Haskell2010
   Build-Depends: base, clash-ghc, {{name}}
+  -- Use the RTS options that upstream clash uses for better performance:
+  -- https://github.com/clash-lang/clash-compiler/blob/daef4893dee4910ab4eced0c141a39d40d88996a/changelog/2026-05-06T15_20_00%2B02_00_ghc_style_rts_defaults
+  ghc-options: "-with-rtsopts=-K512M -H -I5 -T"
   if !os(Windows)
     ghc-options: -dynamic
 
@@ -673,6 +676,7 @@ executable clash
 executable clashi
   main-is: bin/Clashi.hs
   default-language: Haskell2010
+  ghc-options: "-with-rtsopts=-K512M -H -I5 -T"
   if !os(Windows)
     ghc-options: -dynamic
   build-depends: base, clash-ghc, {{name}}
