@@ -717,17 +717,18 @@ driveRGB desiredColor = mealy drive 0 desiredColor
     )
 
 {-# START_FILE stack.yaml #-}
-resolver: lts-24.38
+resolver: lts-24.57
 
 extra-deps:
-- clash-ghc-1.10.0@sha256:d196fd5454e119fa86a2d28736081abb1f176317e80f70972ad6ae96b957af3a,9152
-- clash-lib-1.10.0@sha256:3d512d1d8270586415e35d1eff3a47233978cf106d7909f064f100702a22c167,15776
-- clash-prelude-1.10.0@sha256:69daccb6c9066bac22846e59fc34a3335181c7b3d946715d2cb3204e42391d92,18110
-- clash-prelude-hedgehog-1.10.0@sha256:8d9738c12ce9742647dff05e807e069cc9cbc8c8831da5ea3899ee71932bc378,1615
-- ghc-typelits-extra-0.5.3@sha256:4fae3c698c15132181a431e52f95aa8f655dc78bcd2a5fdf35a7e222eb7d2d19,5830
-- ghc-typelits-knownnat-0.8.3@sha256:84114e2d8a4389c37921ed1b3dd030c6acd8af0eb47d5cb516e3a374ade0f9b4,5993
-- ghc-typelits-natnormalise-0.9.5@sha256:692d7a936ecee9e3a994f0a60d136be1f03137d38aca90f03b8efcb40bed90ca,3973
-- ghc-tcplugin-api-0.18.2.1@sha256:a5e1e7019f94203508a9a398cf1210ec813d2e11a880d325b0259985dbf7b02a,5426
+- clash-ghc-1.10.1@sha256:f8a881d7471a20bccb5191c85a96df932743c90fd6542a4d65ffe99990256c6d,9479
+- clash-lib-1.10.1@sha256:710a9195dd071f89506e4bca5e229fb9407aee93d6b24eccc1f2e2d31d44baf6,15790
+- clash-prelude-1.10.1@sha256:2f10e87868c799387a1d8aaafd38ac10dadd1865194fec42bd74ddaa1c602e44,18778
+- clash-prelude-hedgehog-1.10.1@sha256:651b7eb6f0709d162e131c48a57a0a1e058603ca029e56b3c68a79a9ec5c4f41,1627
+- checked-literals-0.1.2@sha256:82910d3c373d91726d9ca564cb2e02b17b0a1b4486cd19f0e915af97d0c046ce,3019
+- ghc-typelits-extra-0.5.4@sha256:9c02b3d02208d088baff01fa766606c8ba1d3c827f57a11f93accb80208bfcb2,5830
+- ghc-typelits-knownnat-0.8.4@sha256:40842155a260424a3a98a99dd1a528d384a187319bdadbd23553f708802f2260,5993
+- ghc-typelits-natnormalise-0.9.6@sha256:cf48a5cd0e4df189f422a3ff37ee1eb901762b93ed8d8fd60d7260da1b9c9d78,3969
+- ghc-tcplugin-api-0.19.0.0@sha256:72d1bbfdfd025d03a45cb9e9a7d7bc257276b3fa01f6778e052bed018129859c,5410
 
 {-# START_FILE tests/Tests/Blink.hs #-}
 module Tests.Blink where
@@ -884,7 +885,7 @@ common common-options
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.10.0 && < 1.12,
+    clash-prelude >= 1.10.1 && < 1.12,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
