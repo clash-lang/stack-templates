@@ -226,8 +226,8 @@ While Cabal fetches packages straight from Hackage (with a bias towards the late
 resolver: lts-24.38
 ```
 
-This project uses [lts-24.38](https://www.stackage.org/lts-24.38) and Clash
-1.10.0. Snapshots tightly couple GHC and package versions. By
+This project uses [lts-24.57](https://www.stackage.org/lts-24.57) and Clash
+1.10.1. Snapshots tightly couple GHC and package versions. By
 working this way, Stack projects build on a cohesive set of packages. Plus, it
 guarantees that if a `stack build` works now, it will work in 10 years too.
 

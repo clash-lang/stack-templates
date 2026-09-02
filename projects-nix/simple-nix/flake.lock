@@ -11,16 +11,16 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1776952304,
-        "narHash": "sha256-n1si+4jq08gn5FfWeZDO0QM2EcKf11VUFFKQPhhqJWs=",
+        "lastModified": 1787843053,
+        "narHash": "sha256-cMGJ6WMaTYWxXS/gkrm/TUsznMMT/lOixT7xGclWnN8=",
         "owner": "clash-lang",
         "repo": "clash-compiler",
-        "rev": "2371b8708bd4474e6ac0e5988fd7e68b17bf1f69",
+        "rev": "0373fc4920a1d46ebaaf1d66b36bd7d3a3060de3",
         "type": "github"
       },
       "original": {
         "owner": "clash-lang",
-        "ref": "v1.10.0",
+        "ref": "v1.10.1",
         "repo": "clash-compiler",
         "type": "github"
       }
@@ -158,11 +158,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1777395829,
-        "narHash": "sha256-HposVFZcsBCevgqLR73w/BpSe8J1lMgw5kASnnxO3A4=",
+        "lastModified": 1787964612,
+        "narHash": "sha256-0N9nghg3nwzX6b6qc77EzjR9cu/Z+UR66FlfsCqiURs=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "e75f25705c2934955ee5075e62530d74aca973c6",
+        "rev": "e8be7818e19ada32105a8af937a6a473b38167ca",
         "type": "github"
       },
       "original": {
