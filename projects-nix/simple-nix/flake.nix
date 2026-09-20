@@ -2,7 +2,7 @@
   description = "A flake for starter Clash projects!";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    clash-compiler.url = "github:clash-lang/clash-compiler?ref=v1.10.1";
+    clash-compiler.url = "github:clash-lang/clash-compiler?ref=v1.10.2";
   };
   nixConfig = {
     extra-substituters = [ "https://clash-lang.cachix.org" ];

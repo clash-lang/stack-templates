@@ -152,7 +152,7 @@ Note that this whole section is a `common` "stanza". We'll use it as a template 
     Cabal,
 
     -- clash-prelude will set suitable version bounds for the plugins
-    clash-prelude >= 1.8.2 && < 1.10,
+    clash-prelude >= 1.10.2 && < 1.12,
     ghc-typelits-natnormalise,
     ghc-typelits-extra,
     ghc-typelits-knownnat
@@ -223,11 +223,11 @@ write-ghc-environment-files: always
 While Cabal fetches packages straight from Hackage (with a bias towards the latest versions), Stack works through _snapshots_. Snapshots are an index of packages from Hackage know to work well with each other. In addition to that, they specify a GHC version. These snapshots are curated by the community and FP Complete and can be found on [stackage.org](https://www.stackage.org/).
 
 ```yaml
-resolver: lts-24.38
+resolver: lts-24.59
 ```
 
-This project uses [lts-24.57](https://www.stackage.org/lts-24.57) and Clash
-1.10.1. Snapshots tightly couple GHC and package versions. By
+This project uses [lts-24.59](https://www.stackage.org/lts-24.59) and Clash
+1.10.2. Snapshots tightly couple GHC and package versions. By
 working this way, Stack projects build on a cohesive set of packages. Plus, it
 guarantees that if a `stack build` works now, it will work in 10 years too.
 
