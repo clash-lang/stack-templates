@@ -220,6 +220,7 @@ Note that this whole section is a `common` "stanza". We'll use it as a template 
   build-depends:
     base,
     Cabal,
+    clash-shockwaves >= 1.1.2 && < 1.2,
 
     -- clash-prelude will set suitable version bounds for the plugins
     clash-prelude >= 1.10.2 && < 1.12,
@@ -491,6 +492,7 @@ extra-deps:
 - clash-lib-1.10.2@sha256:63eb47bdc50dca927d477e986f46fe8226f92a4cc35a6f057c14849e9a13481f,15913
 - clash-prelude-1.10.2@sha256:d2a76196cc09b3a343f05b48fdb689ec2dff4d0659ad10ea81a7d6d012be8b05,18778
 - clash-prelude-hedgehog-1.10.2@sha256:dceb232177f99540ca5e6ab4949da2b273c8c95f81960855b2ecd159a8b4db2a,1627
+- clash-shockwaves-1.1.2@sha256:42c51e6bac8f3ac19ae73769d9dc4af2e5f31cdb52a3ba3467cbfccb4034891a,5407
 - checked-literals-0.1.2@sha256:82910d3c373d91726d9ca564cb2e02b17b0a1b4486cd19f0e915af97d0c046ce,3019
 - ghc-typelits-extra-0.5.4@sha256:9c02b3d02208d088baff01fa766606c8ba1d3c827f57a11f93accb80208bfcb2,5830
 - ghc-typelits-knownnat-0.8.4@sha256:40842155a260424a3a98a99dd1a528d384a187319bdadbd23553f708802f2260,5993
@@ -647,6 +649,7 @@ common common-options
   build-depends:
     base,
     Cabal,
+    clash-shockwaves >= 1.1.2 && < 1.2,
 
     -- clash-prelude will set suitable version bounds for the plugins
     clash-prelude >= 1.10.2 && < 1.12,

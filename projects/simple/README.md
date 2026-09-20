@@ -150,6 +150,7 @@ Note that this whole section is a `common` "stanza". We'll use it as a template 
   build-depends:
     base,
     Cabal,
+    clash-shockwaves >= 1.1.2 && < 1.2,
 
     -- clash-prelude will set suitable version bounds for the plugins
     clash-prelude >= 1.10.2 && < 1.12,

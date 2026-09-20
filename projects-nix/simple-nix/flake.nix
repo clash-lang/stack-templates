@@ -3,13 +3,18 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     clash-compiler.url = "github:clash-lang/clash-compiler?ref=v1.10.2";
+    clash-shockwaves = {
+      url = "github:clash-lang/clash-shockwaves?ref=v1.1.2";
+      inputs.clash-compiler.follows = "clash-compiler";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
   nixConfig = {
     extra-substituters = [ "https://clash-lang.cachix.org" ];
     extra-trusted-substituters = [ "https://clash-lang.cachix.org" ];
     extra-trusted-public-keys = [ "clash-lang.cachix.org-1:/2N1uka38B/heaOAC+Ztd/EWLmF0RLfizWgC5tamCBg=" ];
   };
-  outputs = { self, nixpkgs, flake-utils, clash-compiler }:
+  outputs = { self, nixpkgs, flake-utils, clash-compiler, clash-shockwaves }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         # A list of regular packages you want to use with your project
@@ -36,7 +41,8 @@
         };
 
         # Create a set of Haskell packages including ours!
-        hs-pkgs = clash-pkgs.extend package-overlay;
+        hs-pkgs = (clash-pkgs.extend clash-shockwaves.overlays.${system}.${ghc-version})
+          .extend package-overlay;
 
         # Options for `nix run`
         # Select the toplevel module

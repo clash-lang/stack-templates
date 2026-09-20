@@ -25,6 +25,35 @@
         "type": "github"
       }
     },
+    "clash-shockwaves": {
+      "inputs": {
+        "clash-compiler": [
+          "clash-compiler"
+        ],
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "clash-shockwaves",
+          "clash-compiler",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788427375,
+        "narHash": "sha256-rBGceJvTyNsxJ1Fr8FxEo6BbJcgr2XGXROBvpSuFJLk=",
+        "owner": "clash-lang",
+        "repo": "clash-shockwaves",
+        "rev": "7b268232a8a3569fba80900a79d80d79a53f8e28",
+        "type": "github"
+      },
+      "original": {
+        "owner": "clash-lang",
+        "ref": "v1.1.2",
+        "repo": "clash-shockwaves",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -175,6 +204,7 @@
     "root": {
       "inputs": {
         "clash-compiler": "clash-compiler",
+        "clash-shockwaves": "clash-shockwaves",
         "flake-utils": "flake-utils_2",
         "nixpkgs": "nixpkgs_2"
       }
