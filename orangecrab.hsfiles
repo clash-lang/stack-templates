@@ -880,6 +880,14 @@ common common-options
     -- remain strict.
     -fno-unbox-small-strict-fields
     -fno-unbox-strict-fields
+
+    -- GHC floats shared local bindings to the top level, where Clash turns
+    -- every use into a separate component instance. See:
+    --
+    --    https://github.com/clash-lang/clash-compiler/issues/3515
+    --
+    -- This flag disables that.
+    -fno-local-float-out-top-level
   build-depends:
     base,
     Cabal,
